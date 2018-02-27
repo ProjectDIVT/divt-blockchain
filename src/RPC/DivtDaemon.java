@@ -2,6 +2,8 @@ package RPC;
 
 import java.rmi.AccessException;
 import java.rmi.AlreadyBoundException;
+import java.rmi.NotBoundException;
+import java.rmi.Remote;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
@@ -33,5 +35,19 @@ public class DivtDaemon implements RMIInterface {
 		// Return help options
 		return null;
 	}
+	public void stop() throws RemoteException{
+		Registry registry = null;
+		try {
+			registry.unbind("divt");
+			UnicastRemoteObject.unexportObject(registry, true);
+		}catch(RemoteException e) {
+			e.printStackTrace();
+		}catch(NotBoundException e) {
+			e.printStackTrace();
+		}
+		
+		}
+		
+	}
 
-}
+

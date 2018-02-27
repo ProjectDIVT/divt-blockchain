@@ -20,6 +20,9 @@ public class DivtCli {
 			case "help":
 				//Print the help call
 				break;
+			case "stop":
+				stub.stop();
+				break;
 			default:
 				System.out.println("No such command");
 				break;
