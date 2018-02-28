@@ -1,0 +1,3 @@
+takewhile == break == do it till it is still true 
+dropwhile == conitnue == it will return all of the values which are not true to the condition
+rangeClosed == <= 'for(int i = 0; i "<=" 5; i++)'
