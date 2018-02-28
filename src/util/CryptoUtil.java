@@ -5,7 +5,7 @@ import javax.xml.bind.DatatypeConverter;
 
 public class CryptoUtil {
 
-	static String hash(String data) {
+	public static String hash(String data) {
 
 		MessageDigest md;
 		byte[] hash = null;
