@@ -54,7 +54,7 @@ public class Block {
 		return CryptoUtil.hash(this.index + this.previousHash + this.timestamp + this.nonce);
 	}
 	
-	public long getDificulty(){
+	public long getDifficulty(){
 		return Long.parseLong(this.hash.substring(0, 15),16);
 	}
 	
