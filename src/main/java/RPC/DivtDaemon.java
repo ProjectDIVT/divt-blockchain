@@ -7,6 +7,9 @@ import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
 
+import blockchain.Blockchain;
+import miner.Miner;
+
 public class DivtDaemon implements RMIInterface {
 
 	public static void main(String args[]) {
@@ -26,6 +29,8 @@ public class DivtDaemon implements RMIInterface {
 		} catch (AlreadyBoundException e) {
 			e.printStackTrace();
 		}
+		Blockchain blockchain = new Blockchain();
+		Miner miner = new Miner(blockchain);
 
 	}
 

@@ -9,7 +9,6 @@ public class Block {
 	private long timestamp;
 	private int nonce;
 	
-	
 	public long getIndex() {
 		return index;
 	}
