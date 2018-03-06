@@ -78,13 +78,11 @@ public class Block {
 		json.put("previousHash", this.getPreviousHash());
 		return json;
 	}
-	public static Block fromJSON(JSONObject json) {
-		Block block = new Block();
-		block.setIndex(json.getLong("index"));
-		block.setNonce(json.getLong("nonce"));
-		block.setPreviousHash(json.getString("previousHash"));
-		block.setHash(json.getString("hasg"));
-		block.setTimestamp(json.getLong("timestamp"));
-		return block;
+	public void fromJSON(JSONObject json) {
+		this.setIndex(json.getLong("index"));
+		this.setNonce(json.getLong("nonce"));
+		this.setPreviousHash(json.getString("previousHash"));
+		this.setHash(json.getString("hasg"));
+		this.setTimestamp(json.getLong("timestamp"));
 	}
 }
