@@ -23,8 +23,7 @@ public class DivtCli implements Serializable{
 			case "help":
 				// Print the help call
 				break;
-			case "getblockhash":
-				System.out.println(stub.getblockhash(Integer.parseInt(args[1])));
+			case "asd":
 				break;
 			case "stop":
 				stub.stop();
@@ -36,6 +35,9 @@ public class DivtCli implements Serializable{
 				// validate 
 				System.out.println(stub.getBlock(args[1]));
 				break;
+			case "getdifficulty":
+				System.out.println(stub.getDifficulty());
+				break;
 			default:
 				System.out.println("No such command");
 				break;
@@ -45,4 +47,17 @@ public class DivtCli implements Serializable{
 			e.printStackTrace();
 		}
 	}
-}	
+
+	private static String printHelp() {
+		StringBuilder builder = new StringBuilder();
+		builder.append("== Blockchain ==\n");
+		builder.append("getbestblockhash\n");
+		builder.append("getblock \"hash\"\n");
+		builder.append("getdifficulty\n");
+		builder.append("\n");
+		builder.append("== Control ==\n");
+		builder.append("getinfo\n");
+		builder.append("stop\n");
+		return builder.toString();
+	}
+}
