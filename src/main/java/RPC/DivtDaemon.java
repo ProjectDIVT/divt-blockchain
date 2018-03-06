@@ -67,17 +67,27 @@ public class DivtDaemon implements RMIInterface {
 		JSONObject json = blockchain.getBlockByHash(hash).toJSON();
 		return json.toString(4);
 	}
-
+	
 	@Override
-	public String getDifficulty() throws RemoteException {
-		String difficulty = String.valueOf(blockchain.getBlockchainDifficulty());
-		return difficulty;
-	}
-	@Override
-	public String getblockhash(int index) throws RemoteException {
-		Block block = blockchain.getBlockByIndex(index);
-		String hash = block.getHash();
-		return hash;
-	}
+		public String getDifficulty() throws RemoteException {
+			String difficulty = String.valueOf(blockchain.getBlockchainDifficulty());
+			return difficulty;
+		}
+		@Override
+		public String getblockhash(int index) throws RemoteException {
+			Block block = blockchain.getBlockByIndex(index);
+			String hash = block.getHash();
+			return hash;
+		}
+	public String getBlockchainInfo() throws RemoteException{
+		String hash = blockchain.getLastBlock().getHash(); //bestblockhash
+		long blockHeight = blockchain.getBlockByHash(hash).getIndex(); //gets block
+		long difficulty = blockchain.getBlockchainDifficulty(); //gets difficulty
+		JSONObject jsonObject = new JSONObject();
+		jsonObject.put("blocks", blockHeight);
+		jsonObject.put("bestblockhash", hash);
+		jsonObject.put("difficulty", difficulty);
+		return jsonObject.toString(4); //returns all of these in a string
 
+}
 }

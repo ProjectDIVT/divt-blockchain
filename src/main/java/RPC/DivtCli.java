@@ -38,6 +38,9 @@ public class DivtCli implements Serializable{
 			case "getdifficulty":
 				System.out.println(stub.getDifficulty());
 				break;
+			case "getblockchaininfo":
+				System.out.println(stub.getBlockchainInfo());
+ 				break;
 			default:
 				System.out.println("No such command");
 				break;

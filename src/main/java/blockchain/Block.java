@@ -5,17 +5,17 @@ import org.json.JSONObject;
 import util.CryptoUtil;
 
 public class Block {
-	private long index;
+	private int index;
 	private String previousHash;
 	private String hash;
 	private long timestamp;
 	private long nonce;
 	
-	public long getIndex() {
+	public int getIndex() {
 		return index;
 	}
 
-	public void setIndex(long index) {
+	public void setIndex(int index) {
 		this.index = index;
 	}
 
@@ -79,7 +79,7 @@ public class Block {
 		return json;
 	}
 	public void fromJSON(JSONObject json) {
-		this.setIndex(json.getLong("index"));
+		this.setIndex(json.getInt("index"));
 		this.setNonce(json.getLong("nonce"));
 		this.setPreviousHash(json.getString("previousHash"));
 		this.setHash(json.getString("hasg"));

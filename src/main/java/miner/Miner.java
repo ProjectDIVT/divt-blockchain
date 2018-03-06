@@ -34,7 +34,7 @@ public class Miner {
 	private Block generateNextBlock(Blockchain blockchain) {
 
 		Block previousBlock = blockchain.getLastBlock();
-		long index = previousBlock.getIndex() + 1;
+		int index = previousBlock.getIndex() + 1;
 		String previousHash = previousBlock.getHash();
 		Block newBlock = new Block();
 		byte threads = 2;
