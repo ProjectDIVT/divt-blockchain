@@ -11,4 +11,5 @@ public interface RMIInterface extends Remote {
 	void stop() throws RemoteException;
 	String getBestBlockHash() throws RemoteException;
 	String getBlock(String hash) throws RemoteException;
+	String getblockhash(int index) throws RemoteException;
 }

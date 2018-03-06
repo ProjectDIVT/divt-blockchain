@@ -7,6 +7,8 @@ import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
 import org.json.JSONObject;
+
+import blockchain.Block;
 import blockchain.Blockchain;
 import miner.Miner;
 
@@ -64,6 +66,13 @@ public class DivtDaemon implements RMIInterface {
 
 		JSONObject json = blockchain.getBlockByHash(hash).toJSON();
 		return json.toString(4);
+	}
+
+	@Override
+	public String getblockhash(int index) throws RemoteException {
+		Block block = blockchain.getBlockByIndex(index);
+		String hash = block.getHash();
+		return hash;
 	}
 
 }

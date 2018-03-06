@@ -23,7 +23,8 @@ public class DivtCli implements Serializable{
 			case "help":
 				// Print the help call
 				break;
-			case "asd":
+			case "getblockhash":
+				System.out.println(stub.getblockhash(Integer.parseInt(args[1])));
 				break;
 			case "stop":
 				stub.stop();
@@ -44,4 +45,4 @@ public class DivtCli implements Serializable{
 			e.printStackTrace();
 		}
 	}
-}
+}	
