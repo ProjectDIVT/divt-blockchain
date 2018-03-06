@@ -1,5 +1,7 @@
 package blockchain;
 
+import org.json.JSONObject;
+
 import util.CryptoUtil;
 
 public class Block {
@@ -7,7 +9,7 @@ public class Block {
 	private String previousHash;
 	private String hash;
 	private long timestamp;
-	private int nonce;
+	private long nonce;
 	
 	public long getIndex() {
 		return index;
@@ -26,7 +28,7 @@ public class Block {
 	}
 
 	public String getHash() {
-		return hash;
+		return this.hash;
 	}
 
 	public void setHash(String hash) {
@@ -41,11 +43,11 @@ public class Block {
 		this.timestamp = timestamp;
 	}
 
-	public int getNonce() {
+	public long getNonce() {
 		return nonce;
 	}
 
-	public void setNonce(int nonce) {
+	public void setNonce(long nonce) {
 		this.nonce = nonce;
 	}
 
@@ -59,14 +61,30 @@ public class Block {
 	
 	static Block getGenesis(){
 		Block block = new Block();
-		block.index=0;
-		block.previousHash=null;
-		block.hash=null;
-		block.timestamp=0;
-		block.nonce=0;
+		block.index = 0;
+		block.previousHash = "0";
+		block.hash = "0";
+		block.timestamp = 0;
+		block.nonce = 0;
 		return block;
 	}
 	
-	//ToDo add From/ToJSON
-	
+	public JSONObject toJSON(){
+		JSONObject json = new JSONObject();
+		json.put("index", this.getIndex());
+		json.put("hash", this.getHash());
+		json.put("timestamp", this.getTimestamp());
+		json.put("nonce", this.getNonce());
+		json.put("previousHash", this.getPreviousHash());
+		return json;
+	}
+	public static Block fromJSON(JSONObject json) {
+		Block block = new Block();
+		block.setIndex(json.getLong("index"));
+		block.setNonce(json.getLong("nonce"));
+		block.setPreviousHash(json.getString("previousHash"));
+		block.setHash(json.getString("hasg"));
+		block.setTimestamp(json.getLong("timestamp"));
+		return block;
+	}
 }

@@ -3,14 +3,19 @@ package miner;
 import java.time.Instant;
 import java.util.Date;
 import java.util.List;
+import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
+
 import blockchain.Block;
 import blockchain.Blockchain;
 
-
 public class Miner {
-
+	
 	Blockchain blockchain;
-	boolean isMining = true;
+	private static ExecutorService executor; 	 //changed
+	private static boolean isMining = true;  	 //changed
 
 	public Miner(Blockchain blockchain) {
 		this.blockchain = blockchain;
@@ -18,37 +23,73 @@ public class Miner {
 	}
 
 	public void mine() {
-		if (isMining) {
-			generateNextBlock(blockchain);
+		while (isMining) {
+			Block block = generateNextBlock(blockchain);
+			if (block.getIndex() != 0) { 
+				blockchain.addBlock(block);
+			}
 		}
 	}
 
-	private void generateNextBlock(Blockchain blockchain) {
+	private Block generateNextBlock(Blockchain blockchain) {
 
 		Block previousBlock = blockchain.getLastBlock();
 		long index = previousBlock.getIndex() + 1;
 		String previousHash = previousBlock.getHash();
-		long timestamp = new Date().getTime() / 1000;
-		Block block = new Block();
-		block.setIndex(index);
-		block.setTimestamp(timestamp);
-		block.setPreviousHash(previousHash);
-		proveWorkFor(block);
+		Block newBlock = new Block();
+		byte threads = 2;
+
+		executor = Executors.newFixedThreadPool(threads);  // 
+		for (int i = 0; i < threads; i++) {
+			final long num = i;
+			executor.execute(() -> {
+				Block block = new Block();
+				block.setIndex(index);
+				block.setPreviousHash(previousHash);
+				long blockDifficulty = 0;
+				long j = num; // variable's name have to be changed
+				while (true) {
+					block.setTimestamp(Instant.now().getEpochSecond());
+					block.setNonce(j);
+					block.setHash(block.toHash());
+					blockDifficulty = block.getDifficulty();
+					j += threads;
+					if (blockDifficulty < blockchain.getBlockchainDifficulty()) {
+						newBlock.setIndex(block.getIndex());
+						newBlock.setHash(block.getHash());
+						newBlock.setNonce(block.getNonce());
+						newBlock.setPreviousHash(block.getPreviousHash());
+						newBlock.setTimestamp(block.getTimestamp());
+						executor.shutdownNow();
+					}
+					if (Thread.currentThread().isInterrupted()) {
+						break;
+					}
+				}
+			});
+		}
+		try {
+			executor.awaitTermination(1000000, TimeUnit.DAYS);
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return newBlock;
 
 	}
 
-	private void proveWorkFor(Block block) {
-		long blockDifficulty = 0;
-		long unixTimestamp = Instant.now().getEpochSecond();
+	public ExecutorService getExecutor() {
+		return executor;
+	}
 
-		do {
-			if (isMining) {
-				block.setNonce(block.getNonce() + 1);
-				block.setHash(block.toHash());
-				blockDifficulty = block.getDifficulty();
-			} else { break; }
-		} while (blockDifficulty >= blockchain.getBlockchainDifficulty());
-		blockchain.addBlock(block);
-		mine();
+	public boolean isMining() {
+		return isMining;
+	}
+
+	public static synchronized void stopMining() {
+		isMining = false;
+	}
+	public static synchronized void shutDownExecutor() {
+		executor.shutdownNow();
 	}
 }

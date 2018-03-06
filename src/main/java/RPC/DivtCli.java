@@ -1,9 +1,11 @@
 package RPC;
 
+import java.io.Serializable;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 
-public class DivtCli {
+
+public class DivtCli implements Serializable{
 
 	public static void main(String[] args) {
 
@@ -21,8 +23,17 @@ public class DivtCli {
 			case "help":
 				// Print the help call
 				break;
+			case "asd":
+				break;
 			case "stop":
 				stub.stop();
+				break;
+			case "getbestblockhash":
+				System.out.println(stub.getBestBlockHash());
+				break;
+			case "getblock":
+				// validate 
+				System.out.println(stub.getBlock(args[1]));
 				break;
 			default:
 				System.out.println("No such command");

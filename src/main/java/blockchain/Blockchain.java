@@ -6,7 +6,7 @@ import java.util.List;
 public class Blockchain {
 	
 	final int blockTargetTime = 60; 
-	private long blockchainDifficulty = (long) 1e17;
+	private long blockchainDifficulty = (long) 1e15;
 	
 	List<Block> blocks = new ArrayList<Block>();
 	
@@ -35,7 +35,7 @@ public class Blockchain {
 	public void addBlock(Block block) {
 		//Validate
 		Block previousBlock = getLastBlock();
-		modifyBlockchainDifficulty((double)(( block.getTimestamp() - previousBlock.getTimestamp() + 1) / blockTargetTime));
+		modifyBlockchainDifficulty((double)(( block.getTimestamp() - previousBlock.getTimestamp()) / blockTargetTime));
 		blocks.add(block);
 		System.out.println(block.getIndex());
 		System.out.println(block.getHash());
@@ -56,6 +56,4 @@ public class Blockchain {
 	
 		this.blockchainDifficulty *= difficultyMultiplier;
 	}
-	
-	
 }

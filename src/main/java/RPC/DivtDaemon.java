@@ -6,11 +6,13 @@ import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
-
+import org.json.JSONObject;
 import blockchain.Blockchain;
 import miner.Miner;
 
 public class DivtDaemon implements RMIInterface {
+	static Blockchain blockchain;
+	static Miner miner;
 
 	public static void main(String args[]) {
 
@@ -29,8 +31,8 @@ public class DivtDaemon implements RMIInterface {
 		} catch (AlreadyBoundException e) {
 			e.printStackTrace();
 		}
-		Blockchain blockchain = new Blockchain();
-		Miner miner = new Miner(blockchain);
+		blockchain = new Blockchain();
+		miner = new Miner(blockchain);
 
 	}
 
@@ -44,10 +46,24 @@ public class DivtDaemon implements RMIInterface {
 	public void stop() throws RemoteException {
 		try {
 			UnicastRemoteObject.unexportObject(this, true);
+			Miner.stopMining();   //changed by me
+			Miner.shutDownExecutor(); //changed by me
 		} catch (RemoteException e) {
 			e.printStackTrace();
 		}
+	}
 
+	@Override
+	public String getBestBlockHash() throws RemoteException {
+		String hash = blockchain.getLastBlock().getHash();
+		return hash;
+	}
+
+	@Override
+	public String getBlock(String hash) throws RemoteException {
+
+		JSONObject json = blockchain.getBlockByHash(hash).toJSON();
+		return json.toString(4);
 	}
 
 }
