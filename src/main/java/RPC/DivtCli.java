@@ -15,15 +15,12 @@ public class DivtCli implements Serializable{
 			RMIInterface stub = (RMIInterface) registry.lookup("divt");
 
 			if (args.length < 1) {
-				// Print the help call
+				System.out.println(printHelp());
 				return;
 			}
 			switch (args[0]) {
-			// Add your call here :D
 			case "help":
-				// Print the help call
-				break;
-			case "asd":
+				System.out.println(printHelp());
 				break;
 			case "stop":
 				stub.stop();
@@ -34,6 +31,9 @@ public class DivtCli implements Serializable{
 			case "getblock":
 				// validate 
 				System.out.println(stub.getBlock(args[1]));
+				break;
+			case "getblockhash":
+				System.out.println(stub.getblockhash(Integer.parseInt(args[1])));
 				break;
 			case "getdifficulty":
 				System.out.println(stub.getDifficulty());
@@ -53,6 +53,8 @@ public class DivtCli implements Serializable{
 		builder.append("== Blockchain ==\n");
 		builder.append("getbestblockhash\n");
 		builder.append("getblock \"hash\"\n");
+		builder.append("getblockchaininfo\n");
+		builder.append("getblockhash\n");
 		builder.append("getdifficulty\n");
 		builder.append("\n");
 		builder.append("== Control ==\n");
