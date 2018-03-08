@@ -17,7 +17,6 @@ public class DivtDaemon implements RMIInterface {
 	static Miner miner;
 
 	public static void main(String args[]) {
-
 		Registry registry;
 		try {
 			registry = LocateRegistry.createRegistry(1099);
@@ -35,21 +34,15 @@ public class DivtDaemon implements RMIInterface {
 		}
 		blockchain = new Blockchain();
 		miner = new Miner(blockchain);
-
-	}
-
-	@Override
-	public String help() throws RemoteException {
-		// Return help options
-		return null;
+		miner.mine();
 	}
 
 	@Override
 	public void stop() throws RemoteException {
 		try {
 			UnicastRemoteObject.unexportObject(this, true);
-			Miner.stopMining();   //changed by me
-			Miner.shutDownExecutor(); //changed by me
+			miner.stopMining();
+			miner.shutDownExecutor();
 		} catch (RemoteException e) {
 			e.printStackTrace();
 		}
@@ -63,31 +56,45 @@ public class DivtDaemon implements RMIInterface {
 
 	@Override
 	public String getBlock(String hash) throws RemoteException {
-
 		JSONObject json = blockchain.getBlockByHash(hash).toJSON();
 		return json.toString(4);
 	}
-	
+
 	@Override
-		public String getDifficulty() throws RemoteException {
-			String difficulty = String.valueOf(blockchain.getBlockchainDifficulty());
-			return difficulty;
-		}
-		@Override
-		public String getblockhash(int index) throws RemoteException {
-			Block block = blockchain.getBlockByIndex(index);
-			String hash = block.getHash();
-			return hash;
-		}
-	public String getBlockchainInfo() throws RemoteException{
-		String hash = blockchain.getLastBlock().getHash(); //bestblockhash
-		long blockHeight = blockchain.getBlockByHash(hash).getIndex(); //gets block
-		long difficulty = blockchain.getBlockchainDifficulty(); //gets difficulty
+	public String getDifficulty() throws RemoteException {
+		String difficulty = String.valueOf(blockchain.getBlockchainDifficulty());
+		return difficulty;
+	}
+
+	@Override
+	public String getblockhash(int index) throws RemoteException {
+		Block block = blockchain.getBlockByIndex(index);
+		String hash = block.getHash();
+		return hash;
+	}
+
+	@Override
+	public String getBlockchainInfo() throws RemoteException {
+		String hash = blockchain.getLastBlock().getHash();
+		long blockHeight = blockchain.getBlockByHash(hash).getIndex();
+		long difficulty = blockchain.getBlockchainDifficulty();
 		JSONObject jsonObject = new JSONObject();
 		jsonObject.put("blocks", blockHeight);
 		jsonObject.put("bestblockhash", hash);
 		jsonObject.put("difficulty", difficulty);
-		return jsonObject.toString(4); //returns all of these in a string
+		return jsonObject.toString(4);
+	}
 
-}
+	@Override
+	public void setMining(boolean toMine) throws RemoteException {
+		if (toMine && !miner.isMining()) {
+			miner.setMining(true);
+			new Thread(() -> {
+				miner.mine();
+			}).start();
+		} else if (!toMine && miner.isMining()) {
+			miner.stopMining();
+			miner.shutDownExecutor();
+		}
+	}
 }

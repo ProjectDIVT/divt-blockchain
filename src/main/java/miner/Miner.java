@@ -12,23 +12,24 @@ import blockchain.Block;
 import blockchain.Blockchain;
 
 public class Miner {
-	
+
 	Blockchain blockchain;
-	private static ExecutorService executor; 	 //changed
-	private static boolean isMining = true;  	 //changed
+	private ExecutorService executor;
+	private volatile boolean isMining = true;
+	private byte threads = 2;
 
 	public Miner(Blockchain blockchain) {
 		this.blockchain = blockchain;
-		mine();
 	}
 
 	public void mine() {
 		while (isMining) {
 			Block block = generateNextBlock(blockchain);
-			if (block.getIndex() != 0) { 
+			if (block.getIndex() != 0) {
 				blockchain.addBlock(block);
 			}
 		}
+
 	}
 
 	private Block generateNextBlock(Blockchain blockchain) {
@@ -37,9 +38,9 @@ public class Miner {
 		int index = previousBlock.getIndex() + 1;
 		String previousHash = previousBlock.getHash();
 		Block newBlock = new Block();
-		byte threads = 2;
+		threads = 2;
 
-		executor = Executors.newFixedThreadPool(threads);  // 
+		executor = Executors.newFixedThreadPool(threads); //
 		for (int i = 0; i < threads; i++) {
 			final long num = i;
 			executor.execute(() -> {
@@ -82,14 +83,27 @@ public class Miner {
 		return executor;
 	}
 
+	public byte getThreads() {
+		return threads;
+	}
+
+	public void setThreads(byte threads) {
+		this.threads = threads;
+	}
+
 	public boolean isMining() {
 		return isMining;
 	}
 
-	public static synchronized void stopMining() {
+	public void setMining(boolean isMining) {
+		this.isMining = isMining;
+	}
+
+	public void stopMining() {
 		isMining = false;
 	}
-	public static synchronized void shutDownExecutor() {
+
+	public void shutDownExecutor() {
 		executor.shutdownNow();
 	}
 }

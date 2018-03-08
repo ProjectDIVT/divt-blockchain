@@ -33,6 +33,7 @@ public class DivtCli implements Serializable{
 				System.out.println(stub.getBlock(args[1]));
 				break;
 			case "getblockhash":
+				//validate
 				System.out.println(stub.getblockhash(Integer.parseInt(args[1])));
 				break;
 			case "getdifficulty":
@@ -40,6 +41,11 @@ public class DivtCli implements Serializable{
 				break;
 			case "getblockchaininfo":
 				System.out.println(stub.getBlockchainInfo());
+ 				break;
+			case "setmining":
+				//validate
+				boolean toMine = Boolean.parseBoolean(args[1]);
+				stub.setMining(toMine);
  				break;
 			default:
 				System.out.println("No such command");
@@ -63,6 +69,9 @@ public class DivtCli implements Serializable{
 		builder.append("== Control ==\n");
 		builder.append("getinfo\n");
 		builder.append("stop\n");
+		builder.append("\n");
+		builder.append("== Mining ==\n");
+		builder.append("setmining\n");
 		return builder.toString();
 	}
 }
