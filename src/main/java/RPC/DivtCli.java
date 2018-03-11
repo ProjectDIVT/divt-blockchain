@@ -29,8 +29,17 @@ public class DivtCli implements Serializable{
 				System.out.println(stub.getBestBlockHash());
 				break;
 			case "getblock":
-				// validate 
-				System.out.println(stub.getBlock(args[1]));
+				String hash = args[1].replaceAll("[\'\"]", "").trim();
+				if (hash.length() == 64) {
+					String block = stub.getBlock(hash);
+					if (block == null) {
+						System.out.println("There is no block with such hash");
+					} else {
+						System.out.println(stub.getBlock(hash));
+					}
+				} else {
+					System.out.println("Invalid hash");
+				}
 				break;
 			case "getblockhash":
 				//validate
