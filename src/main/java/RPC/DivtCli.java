@@ -29,8 +29,21 @@ public class DivtCli implements Serializable{
 				System.out.println(stub.getBestBlockHash());
 				break;
 			case "getblock":
-				// validate 
-				System.out.println(stub.getBlock(args[1]));
+				if(args.length == 1) {
+					System.out.println("You should specify block hash");
+					break;
+				}
+				String hash = args[1].replaceAll("[\'\"]", "").trim();
+				if (hash.length() == 64) {
+					String block = stub.getBlock(hash);
+					if (block == null) {
+						System.out.println("There is no block with such hash");
+					} else {
+						System.out.println(stub.getBlock(hash));
+					}
+				} else {
+					System.out.println("Invalid hash");
+				}
 				break;
 			case "getblockhash":
 				//validate
@@ -43,9 +56,17 @@ public class DivtCli implements Serializable{
 				System.out.println(stub.getBlockchainInfo());
  				break;
 			case "setmining":
-				//validate
-				boolean toMine = Boolean.parseBoolean(args[1]);
-				stub.setMining(toMine);
+				if(args.length == 1) {
+					System.out.println("You should specify 'true' or 'false'");
+					break;
+				}
+				String isMining = args[1].replaceAll("[\'\"]", "").trim();
+				if (isMining.equalsIgnoreCase("true") || isMining.equalsIgnoreCase("false")) {
+					boolean toMine = Boolean.parseBoolean(isMining);
+					stub.setMining(toMine);
+				} else {
+					System.out.println("Invalid parameter. You should specify 'true' or 'false'");
+				}
  				break;
 			case "getmininginfo":
 				System.out.println(stub.getMiningInfo());
