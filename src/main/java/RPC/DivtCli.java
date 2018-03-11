@@ -47,6 +47,9 @@ public class DivtCli implements Serializable{
 				boolean toMine = Boolean.parseBoolean(args[1]);
 				stub.setMining(toMine);
  				break;
+			case "getmininginfo":
+				System.out.println(stub.getMiningInfo());
+ 				break;
 			default:
 				System.out.println("No such command");
 				break;

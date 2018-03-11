@@ -97,4 +97,17 @@ public class DivtDaemon implements RMIInterface {
 			miner.shutDownExecutor();
 		}
 	}
+	@Override
+	public String getMiningInfo() throws RemoteException {
+		int threads = miner.getThreads();
+		boolean isMining = miner.isMining();
+		JSONObject jsonObject = new JSONObject();
+		if(isMining == true){
+			jsonObject.put("status", isMining);
+			jsonObject.put("threads", threads);
+		}else{
+			jsonObject.put("status", isMining);
+		}
+		return jsonObject.toString(4);
+	}
 }
