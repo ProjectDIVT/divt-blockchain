@@ -56,12 +56,12 @@ public class DivtDaemon implements RMIInterface {
 
 	@Override
 	public String getBlock(String hash) throws RemoteException {
-		Block block = blockchain.getBlockByHash(hash);
-		if (block == null) {
+		try {
+			JSONObject json = blockchain.getBlockByHash(hash).toJSON();
+			return json.toString(4);
+		} catch (NullPointerException e) {
 			return null;
 		}
-		JSONObject json = block.toJSON();
-		return json.toString(4);
 	}
 
 	@Override

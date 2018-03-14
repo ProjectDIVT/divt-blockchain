@@ -1,11 +1,10 @@
 package RPC;
 
-import java.io.Serializable;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 
 
-public class DivtCli implements Serializable{
+public class DivtCli {
 
 	public static void main(String[] args) {
 
@@ -29,33 +28,29 @@ public class DivtCli implements Serializable{
 				System.out.println(stub.getBestBlockHash());
 				break;
 			case "getblock":
-				if(args.length == 1) {
+				if (args.length == 1) {
 					System.out.println("You should specify block hash");
 					break;
 				}
-				String hash = args[1].replaceAll("[\'\"]", "").trim();
+				String hash = args[1];
 				if (hash.length() == 64) {
 					String block = stub.getBlock(hash);
-					if (block == null) {
-						System.out.println("There is no block with such hash");
-					} else {
-						System.out.println(stub.getBlock(hash));
-					}
+					System.out.println((block != null) ? block : "There is no block with such hash");
 				} else {
 					System.out.println("Invalid hash");
 				}
 				break;
-				case "getblockhash":
-				if(args.length == 1) {
-				    System.out.println("You should specify block hash");
-					break; 
+			case "getblockhash":
+				if (args.length == 1) {
+					System.out.println("You should specify block hash");
+					break;
 				}
-				try { System.out.println(stub.getblockhash(Integer.parseInt(args[1].replaceAll("[\'\"]|[\'\"]","").trim()))); 
-				}
-				catch(IndexOutOfBoundsException e) { 
-					System.out.println("Therer is no block with such index");	
-				}
-				catch (NumberFormatException e) { 
+				try {
+					System.out.println(
+							stub.getblockhash(Integer.parseInt(args[1].replaceAll("[\'\"]|[\'\"]", "").trim())));
+				} catch (IndexOutOfBoundsException e) {
+					System.out.println("Therer is no block with such index");
+				} catch (NumberFormatException e) {
 					System.out.println("You have entered invalid type !");
 				}
 				break;
@@ -66,7 +61,7 @@ public class DivtCli implements Serializable{
 				System.out.println(stub.getBlockchainInfo());
  				break;
 			case "setmining":
-				if(args.length == 1) {
+				if (args.length == 1) {
 					System.out.println("You should specify 'true' or 'false'");
 					break;
 				}
@@ -106,6 +101,7 @@ public class DivtCli implements Serializable{
 		builder.append("\n");
 		builder.append("== Mining ==\n");
 		builder.append("setmining\n");
+		builder.append("getmininginfo\n");
 		return builder.toString();
 	}
 }
