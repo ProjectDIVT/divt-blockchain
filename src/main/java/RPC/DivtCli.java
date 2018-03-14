@@ -39,18 +39,17 @@ public class DivtCli {
 					System.out.println("Invalid hash");
 				}
 				break;
-				case "getblockhash":
-				if(args.length == 1) {
-				    System.out.println("You should specify block hash");
-					break; 
+			case "getblockhash":
+				if (args.length == 1) {
+					System.out.println("You should specify block hash");
+					break;
 				}
-				try { 
-					System.out.println(stub.getblockhash(Integer.parseInt(args[1].replaceAll("[\'\"]|[\'\"]","").trim()))); 
-				}
-				catch(IndexOutOfBoundsException e) { 
-					System.out.println("Therer is no block with such index");	
-				}
-				catch (NumberFormatException e) { 
+				try {
+					System.out.println(
+							stub.getblockhash(Integer.parseInt(args[1].replaceAll("[\'\"]|[\'\"]", "").trim())));
+				} catch (IndexOutOfBoundsException e) {
+					System.out.println("Therer is no block with such index");
+				} catch (NumberFormatException e) {
 					System.out.println("You have entered invalid type !");
 				}
 				break;
