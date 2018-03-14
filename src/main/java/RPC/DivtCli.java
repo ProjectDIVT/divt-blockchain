@@ -1,11 +1,9 @@
 package RPC;
 
-import java.io.Serializable;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 
-
-public class DivtCli implements Serializable{
+public class DivtCli {
 
 	public static void main(String[] args) {
 
@@ -29,24 +27,20 @@ public class DivtCli implements Serializable{
 				System.out.println(stub.getBestBlockHash());
 				break;
 			case "getblock":
-				if(args.length == 1) {
+				if (args.length == 1) {
 					System.out.println("You should specify block hash");
 					break;
 				}
-				String hash = args[1].replaceAll("[\'\"]", "").trim();
+				String hash = args[1];
 				if (hash.length() == 64) {
 					String block = stub.getBlock(hash);
-					if (block == null) {
-						System.out.println("There is no block with such hash");
-					} else {
-						System.out.println(stub.getBlock(hash));
-					}
+					System.out.println((block != null) ? block : "There is no block with such hash");
 				} else {
 					System.out.println("Invalid hash");
 				}
 				break;
 			case "getblockhash":
-				//validate
+				// validate
 				System.out.println(stub.getblockhash(Integer.parseInt(args[1])));
 				break;
 			case "getdifficulty":
@@ -54,9 +48,9 @@ public class DivtCli implements Serializable{
 				break;
 			case "getblockchaininfo":
 				System.out.println(stub.getBlockchainInfo());
- 				break;
+				break;
 			case "setmining":
-				if(args.length == 1) {
+				if (args.length == 1) {
 					System.out.println("You should specify 'true' or 'false'");
 					break;
 				}
@@ -67,10 +61,10 @@ public class DivtCli implements Serializable{
 				} else {
 					System.out.println("Invalid parameter. You should specify 'true' or 'false'");
 				}
- 				break;
+				break;
 			case "getmininginfo":
 				System.out.println(stub.getMiningInfo());
- 				break;
+				break;
 			default:
 				System.out.println("No such command");
 				break;
@@ -96,6 +90,7 @@ public class DivtCli implements Serializable{
 		builder.append("\n");
 		builder.append("== Mining ==\n");
 		builder.append("setmining\n");
+		builder.append("getmininginfo\n");
 		return builder.toString();
 	}
 }
