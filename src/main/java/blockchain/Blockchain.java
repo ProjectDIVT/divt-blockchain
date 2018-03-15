@@ -1,5 +1,10 @@
 package blockchain;
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -8,16 +13,27 @@ public class Blockchain {
 	final int blockTargetTime = 60; 
 	private long blockchainDifficulty = (long) 1e15;
 	
-	List<Block> blocks = new ArrayList<Block>();
+	Block blocks[] = new Block[6];
 	
 	public Blockchain () {
-		
-		//Check if the blocks list is empty when blocksDb is added
-		blocks.add(Block.getGenesis());
-	}
-	
-	public List<Block> getAllBlocks() {
-		return this.blocks;
+		String OS = System.getProperty("os.name");
+		Path mainDir = null;
+		Path blocksFile = null;
+		if(OS.equals("Linux")){
+			mainDir = Paths.get(System.getProperty("user.home"), ".divt");
+		}else if(OS.startsWith("Windows")){
+			mainDir = Paths.get(System.getProperty("user.home") + "\\AppData\\Roaming\\.divt");
+		}
+		blocksFile = Paths.get(mainDir.toString() + "blocks.dat");
+		if(!Files.exists(mainDir)){
+			try {
+				Files.createDirectory(mainDir);
+				Files.createFile(blocksFile);
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
 	}
 	
 	public Block getBlockByIndex(int index) {
