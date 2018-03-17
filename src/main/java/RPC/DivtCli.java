@@ -4,10 +4,12 @@ import java.io.Serializable;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 
+import javax.swing.JOptionPane;
+
 
 public class DivtCli implements Serializable{
 
-	public static void main(String[] args) {
+	public static void main(String[] args) throws Exception {
 
 		try {
 			Registry registry = LocateRegistry.getRegistry(1099);
@@ -24,6 +26,7 @@ public class DivtCli implements Serializable{
 				break;
 			case "stop":
 				stub.stop();
+				JOptionPane.showMessageDialog(null, "You have stopped the mining process");
 				break;
 			case "getbestblockhash":
 				System.out.println(stub.getBestBlockHash());
@@ -42,14 +45,25 @@ public class DivtCli implements Serializable{
 				}
 				break;
 			case "getblockhash":
-				//validate
-				System.out.println(stub.getblockhash(Integer.parseInt(args[1])));
+				if(args.length == 1) {
+				    System.out.println("You should specify block hash");
+					break; 
+				}
+				try { System.out.println(stub.getblockhash(Integer.parseInt(args[1].replaceAll("[\'\"]|[\'\"]","").trim()))); 
+				}
+				catch(IndexOutOfBoundsException e) { 
+					System.out.println("Therer is no block with such index");	
+				}
+				catch (NumberFormatException e) { 
+					System.out.println("You have entered invalid type !");
+				}
 				break;
 			case "getdifficulty":
 				System.out.println(stub.getDifficulty());
 				break;
+				
 			case "getblockchaininfo":
-				System.out.println(stub.getBlockchainInfo());
+				System.out.println(stub.getBlockchainInfo()); 
  				break;
 			case "setmining":
 				//validate

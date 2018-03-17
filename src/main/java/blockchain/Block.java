@@ -5,12 +5,18 @@ import org.json.JSONObject;
 import util.CryptoUtil;
 
 public class Block {
+	private int blockFile;
 	private int index;
 	private String previousHash;
 	private String hash;
 	private long timestamp;
 	private long nonce;
+	private long difficulty;
 	
+	public void setDifficulty(long difficulty) {
+		this.difficulty = difficulty;
+	}
+
 	public int getIndex() {
 		return index;
 	}
@@ -58,6 +64,13 @@ public class Block {
 	public long getDifficulty(){
 		return Long.parseLong(this.hash.substring(0, 15),16);
 	}
+	public int getBlockFile() {
+		return blockFile;
+	}
+
+	public void setBlockFile(int blockFile) {
+		this.blockFile = blockFile;
+	}
 	
 	static Block getGenesis(){
 		Block block = new Block();
@@ -66,6 +79,7 @@ public class Block {
 		block.hash = "0";
 		block.timestamp = 0;
 		block.nonce = 0;
+		block.blockFile = 0;
 		return block;
 	}
 	
@@ -84,5 +98,21 @@ public class Block {
 		this.setPreviousHash(json.getString("previousHash"));
 		this.setHash(json.getString("hasg"));
 		this.setTimestamp(json.getLong("timestamp"));
+	}
+	
+	public String toFile() {
+		return index + " " + hash + " " + previousHash + " " + timestamp + " " + nonce + " " + difficulty +"\n";
+	}
+	public static Block fromFile(String line) {
+		String [] params = line.split(" ");  	//Have to be validate 
+		Block block = new Block();
+		
+		block.index = Integer.parseInt(params[0]);
+		block.hash = params[1];
+		block.previousHash = params[2];
+		block.timestamp = Long.parseLong(params[3]);
+		block.nonce = Long.parseLong(params[4]);
+		block.difficulty = Long.parseLong(params[5]);
+		return block;
 	}
 }

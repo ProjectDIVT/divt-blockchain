@@ -15,7 +15,7 @@ import miner.Miner;
 public class DivtDaemon implements RMIInterface {
 	static Blockchain blockchain;
 	static Miner miner;
-
+	
 	public static void main(String args[]) {
 		Registry registry;
 		try {
@@ -33,6 +33,8 @@ public class DivtDaemon implements RMIInterface {
 			e.printStackTrace();
 		}
 		blockchain = new Blockchain();
+		while(blockchain.isReadingFiles) {
+		}
 		miner = new Miner(blockchain);
 		miner.mine();
 	}
