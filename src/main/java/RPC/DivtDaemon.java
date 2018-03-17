@@ -58,12 +58,12 @@ public class DivtDaemon implements RMIInterface {
 
 	@Override
 	public String getBlock(String hash) throws RemoteException {
-		Block block = blockchain.getBlockByHash(hash);
-		if (block == null) {
+		try {
+			JSONObject json = blockchain.getBlockByHash(hash).toJSON();
+			return json.toString(4);
+		} catch (NullPointerException e) {
 			return null;
 		}
-		JSONObject json = block.toJSON();
-		return json.toString(4);
 	}
 
 	@Override
@@ -102,5 +102,18 @@ public class DivtDaemon implements RMIInterface {
 			miner.stopMining();
 			miner.shutDownExecutor();
 		}
+	}
+	@Override
+	public String getMiningInfo() throws RemoteException {
+		int threads = miner.getThreads();
+		boolean isMining = miner.isMining();
+		JSONObject jsonObject = new JSONObject();
+		if(isMining == true){
+			jsonObject.put("status", isMining);
+			jsonObject.put("threads", threads);
+		}else{
+			jsonObject.put("status", isMining);
+		}
+		return jsonObject.toString(4);
 	}
 }

@@ -1,13 +1,17 @@
 package RPC;
 
-import java.io.Serializable;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 
 
-public class DivtCli {
+<<<<<<< HEAD
 
-	public static void main(String[] args) {
+public class DivtCli implements Serializable{
+=======
+public class DivtCli {
+>>>>>>> 8a35468079377827036e608e26fd1cb407f4a79b
+
+	public static void main(String[] args){
 
 		try {
 			Registry registry = LocateRegistry.getRegistry(1099);
@@ -24,6 +28,7 @@ public class DivtCli {
 				break;
 			case "stop":
 				stub.stop();
+				System.out.println("You have stopped the mining process");
 				break;
 			case "getbestblockhash":
 				System.out.println(stub.getBestBlockHash());
@@ -42,6 +47,18 @@ public class DivtCli {
 				}
 				break;
 			case "getblockhash":
+<<<<<<< HEAD
+				if(args.length == 1) {
+				    System.out.println("You should specify block hash");
+					break; 
+				}
+				try { System.out.println(stub.getblockhash(Integer.parseInt(args[1].replaceAll("[\'\"]|[\'\"]","").trim()))); 
+				}
+				catch(IndexOutOfBoundsException e) { 
+					System.out.println("Therer is no block with such index");	
+				}
+				catch (NumberFormatException e) { 
+=======
 				if (args.length == 1) {
 					System.out.println("You should specify block hash");
 					break;
@@ -52,14 +69,16 @@ public class DivtCli {
 				} catch (IndexOutOfBoundsException e) {
 					System.out.println("Therer is no block with such index");
 				} catch (NumberFormatException e) {
+>>>>>>> 8a35468079377827036e608e26fd1cb407f4a79b
 					System.out.println("You have entered invalid type !");
 				}
 				break;
 			case "getdifficulty":
 				System.out.println(stub.getDifficulty());
 				break;
+				
 			case "getblockchaininfo":
-				System.out.println(stub.getBlockchainInfo());
+				System.out.println(stub.getBlockchainInfo()); 
  				break;
 			case "setmining":
 				if (args.length == 1) {

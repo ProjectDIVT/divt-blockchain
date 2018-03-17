@@ -13,5 +13,6 @@ public interface RMIInterface extends Remote {
 	String getBlock(String hash) throws RemoteException;
 	String getDifficulty() throws RemoteException;
     String getblockhash(int index) throws RemoteException;
+    String getMiningInfo() throws RemoteException;
     void setMining(boolean toMine) throws RemoteException;
 }
