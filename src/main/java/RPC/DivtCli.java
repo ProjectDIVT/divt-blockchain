@@ -4,12 +4,11 @@ import java.io.Serializable;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 
-import javax.swing.JOptionPane;
 
 
 public class DivtCli implements Serializable{
 
-	public static void main(String[] args) throws Exception {
+	public static void main(String[] args){
 
 		try {
 			Registry registry = LocateRegistry.getRegistry(1099);
@@ -26,7 +25,7 @@ public class DivtCli implements Serializable{
 				break;
 			case "stop":
 				stub.stop();
-				JOptionPane.showMessageDialog(null, "You have stopped the mining process");
+				System.out.println("You have stopped the mining process");
 				break;
 			case "getbestblockhash":
 				System.out.println(stub.getBestBlockHash());
