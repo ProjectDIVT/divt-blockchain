@@ -34,7 +34,6 @@ public class Blockchain {
 
 		}
 		blocksConfig = Paths.get(mainPath.toString(), "blocksConfig");
-		blkPaths.add(Paths.get(mainPath.toString(), "blk0.txt"));
 		if (!Files.exists(mainPath)) {
 			try {
 				Files.createDirectory(mainPath);
@@ -64,11 +63,13 @@ public class Blockchain {
 				e.printStackTrace();
 			}
 		}
-		if (!Files.exists(blkPaths.get(0))) {
+		if (!Files.exists(Paths.get(mainPath.toString(), "blk0.txt"))) {
 			try {
-				Files.createFile(blkPaths.get(0));
+				Path firstFile = Paths.get(mainPath.toString(), "blk0.txt");
+				Files.createFile(firstFile);
 				blocks.add(Block.getGenesis());
-				Files.write(blkPaths.get(0), Block.getGenesis().toFile().getBytes());
+				Files.write(firstFile, Block.getGenesis().toFile().getBytes());
+				blkPaths.add(firstFile);
 				isReadingFiles = false;
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
@@ -80,7 +81,8 @@ public class Blockchain {
 				while (true) {
 					Path path = Paths.get(mainPath.toString(),"blk" + index + ".txt");
 					if (Files.exists(path)) {
-						Files.readAllLines(path).stream().forEach(e -> blocks.add(Block.fromFile(e)));
+						final int fileIndex = index;
+						Files.readAllLines(path).stream().forEach(e -> blocks.add(Block.fromFile(e, fileIndex)));
 						this.blockchainDifficulty = getLastBlock().getDifficulty();
 						index++;
 						blkPaths.add(path);

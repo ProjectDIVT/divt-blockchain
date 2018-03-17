@@ -103,7 +103,7 @@ public class Block {
 	public String toFile() {
 		return index + " " + hash + " " + previousHash + " " + timestamp + " " + nonce + " " + difficulty +"\n";
 	}
-	public static Block fromFile(String line) {
+	public static Block fromFile(String line, int blockFile) {
 		String [] params = line.split(" ");  	//Have to be validate 
 		Block block = new Block();
 		
@@ -113,6 +113,7 @@ public class Block {
 		block.timestamp = Long.parseLong(params[3]);
 		block.nonce = Long.parseLong(params[4]);
 		block.difficulty = Long.parseLong(params[5]);
+		block.setBlockFile(blockFile);
 		return block;
 	}
 }
