@@ -1,7 +1,6 @@
 package blockchain;
 
 import java.io.IOException;
-import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -97,6 +96,9 @@ public class Blockchain {
 		}
 
 	}
+	public int getBlockchainHeight() {
+		return blocks.size();
+	}
 
 	public List<Block> getAllBlocks() {
 		return this.blocks;
@@ -147,6 +149,7 @@ public class Blockchain {
 	public long getBlockchainDifficulty() {
 		return blockchainDifficulty;
 	}
+	
 
 	public void modifyBlockchainDifficulty(double difficultyMultiplier) {
 		if (difficultyMultiplier > 2) {
