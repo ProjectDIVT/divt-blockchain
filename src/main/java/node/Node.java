@@ -5,6 +5,7 @@ import java.io.PrintStream;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.UnknownHostException;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Scanner;
 
@@ -15,23 +16,23 @@ import blockchain.Blockchain;
 
 public class Node {
 	Blockchain blockchain;
-	HashSet<Peer> peers = new HashSet<Peer>();
+	static HashSet<Peer> peers = new HashSet<Peer>();
 
 	
 	// Peer --> IP --> Node --> listener --> 
 	public Node(Blockchain blockchain) {
 		peers.add(new Peer("87.118.159.27"));
-		EventListener();
 		this.blockchain = blockchain;
+		EventListener();
+		peers.stream().forEach(Node::join);
 	}
 
-	public void EventListener() { 
+	public void EventListener() {
 		new Thread(() -> {
 			ServerSocket serverSocket = null;
 			try {
 				serverSocket = new ServerSocket(14200);
 				while (true) {
-
 					Socket socket = serverSocket.accept();
 					Scanner scanner = new Scanner(socket.getInputStream());
 					PrintStream printStream = new PrintStream(socket.getOutputStream());
@@ -39,6 +40,7 @@ public class Node {
 					switch (receivingJSON.getString("command")) {
 					case "join":
 						JSONObject sendingJSON = new JSONObject();
+						System.out.println("Received from: " + socket.getInetAddress().getHostAddress());
 						JSONArray array = new JSONArray();
 						peers.add(new Peer(socket.getInetAddress().getHostAddress()));
 						sendingJSON.put("height", blockchain.getBlockchainHeight());
@@ -61,14 +63,15 @@ public class Node {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
-		});
+		}).start();
 	}
 
-	public void join(Peer peer) {
+	public static void join(Peer peer) {
 		Socket socket;
 		try {
 			JSONObject sendingJSON = new JSONObject();
-			socket = new Socket(peer.getIP(), 4444);
+			System.out.println("Sended to: " + peer.getIP());
+			socket = new Socket(peer.getIP(), 14200);
 			Scanner scanner = new Scanner(socket.getInputStream());
 			PrintStream stream = new PrintStream(socket.getOutputStream());
 			sendingJSON.put("command", "join");

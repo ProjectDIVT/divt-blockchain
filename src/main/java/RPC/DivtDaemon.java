@@ -11,10 +11,12 @@ import org.json.JSONObject;
 import blockchain.Block;
 import blockchain.Blockchain;
 import miner.Miner;
+import node.Node;
 
 public class DivtDaemon implements RMIInterface {
 	static Blockchain blockchain;
 	static Miner miner;
+	static Node node;
 	
 	public static void main(String args[]) {
 		Registry registry;
@@ -33,10 +35,12 @@ public class DivtDaemon implements RMIInterface {
 			e.printStackTrace();
 		}
 		blockchain = new Blockchain();
+		node = new Node(blockchain);
 		while(blockchain.isReadingFiles) {
 		}
 		miner = new Miner(blockchain);
 		miner.mine();
+		
 	}
 
 	@Override
