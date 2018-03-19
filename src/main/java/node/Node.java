@@ -52,6 +52,11 @@ public class Node {
 						JSONObject sendingJSON = new JSONObject();
 						JSONArray array = new JSONArray();
 						peers.add(new Peer(socket.getInetAddress().getHostAddress(), receivingJSON.getInt("height")));
+						peers.forEach(e -> {
+						    if(e.getIP().equals(socket.getInetAddress().getHostAddress())) {
+						    e.setBlockchainHeight(receivingJSON.getInt("height"));
+						    }
+						});
 						sendingJSON.put("height", blockchain.getBlockchainHeight());
 						peers.stream().forEach(e -> {
 							JSONObject peer = new JSONObject();
@@ -93,9 +98,9 @@ public class Node {
 			sendingJSON.put("height", blockchain.getBlockchainHeight());
 			stream.println(sendingJSON.toString());
 			JSONObject json = new JSONObject(scanner.nextLine());
-			peer.setBlockChainHeight(json.getInt("height"));
+			peer.setBlockchainHeight(json.getInt("height"));
 
-			json.getJSONArray("peers").toList().stream().forEach(e -> {
+			json.getJSONArray("peers").forEach(e -> {
 				JSONObject jsonPeer = (JSONObject) e;
 				peers.add(new Peer(jsonPeer.getString("host"), jsonPeer.getInt("height")));
 			});

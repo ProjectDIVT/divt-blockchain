@@ -34,7 +34,7 @@ public class Peer {
 		}
 	}
 
-	public void setBlockChainHeight(int blockchainHeight) {
+	public void setBlockchainHeight(int blockchainHeight) {
 		this.blockchainHeight = blockchainHeight;
 	}
 
