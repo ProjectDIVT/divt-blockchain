@@ -2,10 +2,15 @@ package node;
 
 import java.io.IOException;
 import java.io.PrintStream;
+import java.net.ConnectException;
+import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.net.SocketException;
+import java.net.SocketTimeoutException;
 import java.net.UnknownHostException;
 import java.util.Arrays;
+import java.util.ConcurrentModificationException;
 import java.util.HashSet;
 import java.util.Scanner;
 
@@ -18,13 +23,15 @@ public class Node {
 	Blockchain blockchain;
 	static HashSet<Peer> peers = new HashSet<Peer>();
 
-	
-	// Peer --> IP --> Node --> listener --> 
+	// Peer --> IP --> Node --> listener -->
 	public Node(Blockchain blockchain) {
 		peers.add(new Peer("87.118.159.27"));
 		this.blockchain = blockchain;
 		EventListener();
-		peers.stream().forEach(Node::join);
+		new Thread(() -> {
+			try { peers.stream().forEach(Node::join);
+			} catch(ConcurrentModificationException ex) {}
+		}).start(); 
 	}
 
 	public void EventListener() {
@@ -37,10 +44,10 @@ public class Node {
 					Scanner scanner = new Scanner(socket.getInputStream());
 					PrintStream printStream = new PrintStream(socket.getOutputStream());
 					JSONObject receivingJSON = new JSONObject(scanner.nextLine());
+					System.out.println("Received from: " + socket.getInetAddress().getHostAddress());
 					switch (receivingJSON.getString("command")) {
 					case "join":
 						JSONObject sendingJSON = new JSONObject();
-						System.out.println("Received from: " + socket.getInetAddress().getHostAddress());
 						JSONArray array = new JSONArray();
 						peers.add(new Peer(socket.getInetAddress().getHostAddress()));
 						sendingJSON.put("height", blockchain.getBlockchainHeight());
@@ -48,10 +55,10 @@ public class Node {
 						sendingJSON.put("peers", array);
 						printStream.println(sendingJSON.toString()); // send to peers in the Hashset in form of json
 						break;
-					case "":  //peer and height block 
+					case "": // peer and height block
 
 						break;
-					case "b": // 
+					case "b": //
 
 						break;
 
@@ -71,14 +78,20 @@ public class Node {
 		try {
 			JSONObject sendingJSON = new JSONObject();
 			System.out.println("Sended to: " + peer.getIP());
-			socket = new Socket(peer.getIP(), 14200);
+			socket = new Socket();
+			socket.connect(new InetSocketAddress(peer.getIP(), 14200), 10000);
 			Scanner scanner = new Scanner(socket.getInputStream());
 			PrintStream stream = new PrintStream(socket.getOutputStream());
 			sendingJSON.put("command", "join");
 			stream.println(sendingJSON.toString());
 			JSONObject json = new JSONObject(scanner.nextLine());
+
 			json.getJSONArray("peers").toList().stream().forEach(e -> peers.add(new Peer(e.toString())));
-			
+
+
+		} catch (SocketTimeoutException e) {
+			System.out.println("Cannot reach the peer: " + peer.getIP());
+			return;
 		} catch (UnknownHostException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
