@@ -25,13 +25,15 @@ public class Node {
 
 	// Peer --> IP --> Node --> listener -->
 	public Node(Blockchain blockchain) {
-		peers.add(new Peer("87.118.159.27"));
+		peers.add(new Peer("87.118.159.27", 0));
 		this.blockchain = blockchain;
 		EventListener();
 		new Thread(() -> {
-			try { peers.stream().forEach(Node::join);
-			} catch(ConcurrentModificationException ex) {}
-		}).start(); 
+			try {
+				peers.stream().forEach(this::join);
+			} catch (ConcurrentModificationException ex) {
+			}
+		}).start();
 	}
 
 	public void EventListener() {
@@ -49,9 +51,14 @@ public class Node {
 					case "join":
 						JSONObject sendingJSON = new JSONObject();
 						JSONArray array = new JSONArray();
-						peers.add(new Peer(socket.getInetAddress().getHostAddress()));
+						peers.add(new Peer(socket.getInetAddress().getHostAddress(), receivingJSON.getInt("height")));
 						sendingJSON.put("height", blockchain.getBlockchainHeight());
-						peers.stream().forEach(e -> array.put(e.getIP()));
+						peers.stream().forEach(e -> {
+							JSONObject peer = new JSONObject();
+							peer.put("host", e.getIP());
+							peer.put("height", e.getBlockchainHeight());
+							array.put(peer);
+						});
 						sendingJSON.put("peers", array);
 						printStream.println(sendingJSON.toString()); // send to peers in the Hashset in form of json
 						break;
@@ -73,7 +80,7 @@ public class Node {
 		}).start();
 	}
 
-	public static void join(Peer peer) {
+	public void join(Peer peer) {
 		Socket socket;
 		try {
 			JSONObject sendingJSON = new JSONObject();
@@ -83,11 +90,15 @@ public class Node {
 			Scanner scanner = new Scanner(socket.getInputStream());
 			PrintStream stream = new PrintStream(socket.getOutputStream());
 			sendingJSON.put("command", "join");
+			sendingJSON.put("height", blockchain.getBlockchainHeight());
 			stream.println(sendingJSON.toString());
 			JSONObject json = new JSONObject(scanner.nextLine());
+			peer.setBlockChainHeight(json.getInt("height"));
 
-			json.getJSONArray("peers").toList().stream().forEach(e -> peers.add(new Peer(e.toString())));
-
+			json.getJSONArray("peers").toList().stream().forEach(e -> {
+				JSONObject jsonPeer = (JSONObject) e;
+				peers.add(new Peer(jsonPeer.getString("host"), jsonPeer.getInt("height")));
+			});
 
 		} catch (SocketTimeoutException e) {
 			System.out.println("Cannot reach the peer: " + peer.getIP());
