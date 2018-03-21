@@ -3,7 +3,6 @@ package RPC;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 
-
 public class DivtCli {
 
 	public static void main(String[] args) {
@@ -57,9 +56,12 @@ public class DivtCli {
 			case "getdifficulty":
 				System.out.println(stub.getDifficulty());
 				break;
+			case "setminingthreads":
+				stub.setMiningThreads(Byte.parseByte(args[1]));
+				break;
 			case "getblockchaininfo":
 				System.out.println(stub.getBlockchainInfo());
- 				break;
+				break;
 			case "setmining":
 				if (args.length == 1) {
 					System.out.println("You should specify 'true' or 'false'");
@@ -72,10 +74,10 @@ public class DivtCli {
 				} else {
 					System.out.println("Invalid parameter. You should specify 'true' or 'false'");
 				}
- 				break;
+				break;
 			case "getmininginfo":
 				System.out.println(stub.getMiningInfo());
- 				break;
+				break;
 			default:
 				System.out.println("No such command");
 				break;

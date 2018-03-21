@@ -17,7 +17,7 @@ public class DivtDaemon implements RMIInterface {
 	static Blockchain blockchain;
 	static Miner miner;
 	static Node node;
-	
+
 	public static void main(String args[]) {
 		Registry registry;
 		try {
@@ -36,13 +36,13 @@ public class DivtDaemon implements RMIInterface {
 		}
 		blockchain = new Blockchain();
 		node = new Node(blockchain);
-		while(blockchain.isReadingFiles) {
+		while (blockchain.isReadingFiles) {
 		}
 		miner = new Miner(blockchain);
 		miner.mine();
-		
+
 	}
-		
+
 	@Override
 	public void stop() throws RemoteException {
 		try {
@@ -107,17 +107,34 @@ public class DivtDaemon implements RMIInterface {
 			miner.shutDownExecutor();
 		}
 	}
+
 	@Override
 	public String getMiningInfo() throws RemoteException {
 		int threads = miner.getThreads();
 		boolean isMining = miner.isMining();
 		JSONObject jsonObject = new JSONObject();
-		if(isMining == true){
+		if (isMining == true) {
 			jsonObject.put("status", isMining);
 			jsonObject.put("threads", threads);
-		}else{
+		} else {
 			jsonObject.put("status", isMining);
 		}
 		return jsonObject.toString(4);
+	}
+
+	public void setMiningThreads(byte num) throws RemoteException{
+				new Thread(() -> {
+					miner.stopMining();
+					miner.shutDownExecutor();
+					miner.setThreads(num);
+					try {
+						Thread.sleep(500);
+					} catch (InterruptedException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+					miner.setMining(true);
+					miner.mine();
+				}).start();
 	}
 }
