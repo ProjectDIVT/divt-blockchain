@@ -42,7 +42,7 @@ public class DivtDaemon implements RMIInterface {
 		miner.mine();
 		
 	}
-
+		
 	@Override
 	public void stop() throws RemoteException {
 		try {
