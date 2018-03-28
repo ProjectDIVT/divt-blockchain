@@ -21,6 +21,7 @@ public class Blockchain {
 	Path mainPath = null;
 	Path blocksConfig = null;
 	public Boolean isReadingFiles = true;
+	public Boolean isSynching = true;
 
 	public Blockchain() {
 		String OS = System.getProperty("os.name");
@@ -78,14 +79,14 @@ public class Blockchain {
 			try {
 				int index = 0;
 				while (true) {
-					Path path = Paths.get(mainPath.toString(),"blk" + index + ".txt");
+					Path path = Paths.get(mainPath.toString(), "blk" + index + ".txt");
 					if (Files.exists(path)) {
 						final int fileIndex = index;
 						Files.readAllLines(path).stream().forEach(e -> blocks.add(Block.fromFile(e, fileIndex)));
 						this.blockchainDifficulty = getLastBlock().getDifficulty();
 						index++;
 						blkPaths.add(path);
-					}else {
+					} else {
 						break;
 					}
 				}
@@ -94,8 +95,8 @@ public class Blockchain {
 				e.printStackTrace();
 			}
 		}
-
 	}
+
 	public int getBlockchainHeight() {
 		return blocks.size();
 	}
@@ -121,7 +122,7 @@ public class Blockchain {
 		Block previousBlock = getLastBlock();
 		int fileNumber = previousBlock.getBlockFile();
 		modifyBlockchainDifficulty((double) ((block.getTimestamp() - previousBlock.getTimestamp()) / blockTargetTime));
-		if (blkPaths.get(blkPaths.size() - 1).toFile().length() > 1024) { // The size has to be changed 
+		if (blkPaths.get(blkPaths.size() - 1).toFile().length() > 1024) { // The size has to be changed
 			Path newPath = Paths.get(mainPath.toString(), "blk" + (fileNumber + 1) + ".txt");
 			blkPaths.add(Paths.get(newPath.toString()));
 			try {
@@ -149,7 +150,6 @@ public class Blockchain {
 	public long getBlockchainDifficulty() {
 		return blockchainDifficulty;
 	}
-	
 
 	public void modifyBlockchainDifficulty(double difficultyMultiplier) {
 		if (difficultyMultiplier > 2) {
@@ -160,5 +160,50 @@ public class Blockchain {
 		}
 
 		this.blockchainDifficulty *= difficultyMultiplier;
+	}
+
+	public void removeForkedBlocks(int index) {
+		int blockIndex = blocks.get(index).getBlockFile() + 1;
+		while (blocks.size() != index + 1) {
+			blocks.remove(index + 1);
+		}
+		while (true) {
+			Path path = Paths.get(mainPath.toString(), "blk" + blockIndex + ".txt");
+			if (Files.exists(path)) {
+
+				try {
+					Files.delete(path);
+					blockIndex++;
+
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			} else {
+				break;
+			}
+		}
+		Path path = Paths.get(mainPath.toString(), "blk" + blocks.get(index).getBlockFile() + ".txt");
+		try {
+		StringBuilder fileContent = new StringBuilder();
+		Files.lines(path).filter(e -> {
+				int lineIndex = Integer.parseInt(e.split(" ")[0]);
+				return lineIndex <= index;
+			}).forEach(e -> fileContent.append(e + "\n"));
+		Files.delete(path);
+		Files.createFile(path);
+		Files.write(path, fileContent.toString().getBytes());
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+
+	public boolean isSynching() {
+		return isSynching;
+	}
+
+	public void setSynching(boolean isSynching) {
+		this.isSynching = isSynching;
 	}
 }

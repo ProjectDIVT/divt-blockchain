@@ -23,12 +23,14 @@ public class Miner {
 	}
 
 	public void mine() {
-		while (isMining) {
-			Block block = generateNextBlock(blockchain);
-			if (block.getIndex() != 0) {
-				blockchain.addBlock(block);
+		new Thread(() -> {
+			while (isMining && !blockchain.isSynching()) {
+				Block block = generateNextBlock(blockchain);
+				if (block.getIndex() != 0) {
+					blockchain.addBlock(block);
+				}
 			}
-		}
+		});
 
 	}
 
