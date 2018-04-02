@@ -95,6 +95,7 @@ public class Block {
         json.put("nonce", this.getNonce());
         json.put("previousHash", this.getPreviousHash());
         json.put("blockchainDifficulty", this.getBlockchainDifficulty());
+        json.put("blockFile", this.getBlockFile());
         return json;
     }
     public void fromJSON(JSONObject json) {
@@ -104,8 +105,10 @@ public class Block {
         this.setHash(json.getString("hash"));
         this.setTimestamp(json.getLong("timestamp"));
         this.setBlockchainDifficulty(json.getLong("blockchainDifficulty"));
+        this.setBlockFile(json.getInt("blockFile"));
     }
 
+	
 	public String toFile() {
 		return index + " " + hash + " " + previousHash + " " + timestamp + " " + nonce + " " + blockchainDifficulty +"\n";
 	}

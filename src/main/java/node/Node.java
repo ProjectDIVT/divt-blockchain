@@ -27,8 +27,6 @@ public class Node {
 	Blockchain blockchain;
 	static HashSet<Peer> peers = new HashSet<Peer>();
 
-	// join -->
-	// Peer --> IP --> Node --> listener -->
 	public Node(Blockchain blockchain) {
 		// peers.add(new Peer("78.130.133.28", 0));
 		peers.add(new Peer("87.118.159.27", 0));
@@ -95,7 +93,9 @@ public class Node {
 											blockchain.getBlockByIndex(receivingJSON.getInt("index")).toJSON());
 									printStream.println(sendingJSON.toString());
 									break;
-
+								case "leave":
+									peers.remove(new Peer(socket.getInetAddress().getHostAddress(), 0));
+									break;
 								default:
 									break;
 								}
@@ -218,4 +218,21 @@ public class Node {
 		}
 	}
 
+	public void leaveNetwork() {
+		JSONObject sendingJSON = new JSONObject();
+		sendingJSON.put("command", "leave");
+		Socket socket = new Socket();
+
+		peers.stream().forEach(e -> {
+			try {
+				socket.connect(new InetSocketAddress(e.getIP(), 14200), 5000);
+				PrintStream stream = new PrintStream(socket.getOutputStream());
+				stream.println(sendingJSON.toString());
+			} catch (IOException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
+
+		});
+	}
 }
