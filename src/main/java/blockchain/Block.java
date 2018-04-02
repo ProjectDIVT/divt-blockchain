@@ -88,21 +88,24 @@ public class Block {
 	}
 	
 	public JSONObject toJSON(){
-		JSONObject json = new JSONObject();
-		json.put("index", this.getIndex());
-		json.put("hash", this.getHash());
-		json.put("timestamp", this.getTimestamp());
-		json.put("nonce", this.getNonce());
-		json.put("previousHash", this.getPreviousHash());
-		return json;
-	}
-	public void fromJSON(JSONObject json) {
-		this.setIndex(json.getInt("index"));
-		this.setNonce(json.getLong("nonce"));
-		this.setPreviousHash(json.getString("previousHash"));
-		this.setHash(json.getString("hasg"));
-		this.setTimestamp(json.getLong("timestamp"));
-	}
+        JSONObject json = new JSONObject();
+        json.put("index", this.getIndex());
+        json.put("hash", this.getHash());
+        json.put("timestamp", this.getTimestamp());
+        json.put("nonce", this.getNonce());
+        json.put("previousHash", this.getPreviousHash());
+        json.put("blockchainDifficulty", this.getBlockchainDifficulty());
+        return json;
+    }
+    public void fromJSON(JSONObject json) {
+        this.setIndex(json.getInt("index"));
+        this.setNonce(json.getLong("nonce"));
+        this.setPreviousHash(json.getString("previousHash"));
+        this.setHash(json.getString("hasg"));
+        this.setTimestamp(json.getLong("timestamp"));
+        this.setBlockchainDifficulty(json.getLong("blockchainDifficulty"));
+    }
+
 	
 	public String toFile() {
 		return index + " " + hash + " " + previousHash + " " + timestamp + " " + nonce + " " + blockchainDifficulty +"\n";

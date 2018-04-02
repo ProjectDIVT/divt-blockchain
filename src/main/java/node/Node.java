@@ -15,6 +15,7 @@ import java.util.Comparator;
 import java.util.ConcurrentModificationException;
 import java.util.HashSet;
 import java.util.Scanner;
+import java.util.stream.Stream;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -88,8 +89,11 @@ public class Node {
 											blockchain.getBlockByIndex(receivingJSON.getInt("index")).getHash());
 									printStream.println(sendingJSON.toString());
 									break;
-								case "b": //
-
+								case "getblock":
+									sendingJSON = new JSONObject();
+									sendingJSON.put("block",
+											blockchain.getBlockByIndex(receivingJSON.getInt("index")).toJSON().toString());
+									printStream.println(sendingJSON.toString());
 									break;
 
 								default:
@@ -101,7 +105,7 @@ public class Node {
 							// TODO Auto-generated catch block
 							e1.printStackTrace();
 						}
-					});
+					}).start();
 				}
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
@@ -148,6 +152,7 @@ public class Node {
 		Socket socket = new Socket();
 		JSONObject json = new JSONObject();
 		JSONObject sendingJSON;
+		int index = 0;
 		try {
 			socket.connect(new InetSocketAddress(peer.getIP(), 14200), 5000);
 			Scanner scanner = new Scanner(socket.getInputStream());
@@ -159,7 +164,7 @@ public class Node {
 			String hash = receivingJSON.getString("blockhash");
 			System.out.println(hash);
 			if (!hash.equals(blockchain.getLastBlock().getHash())) {
-				int index = blockchain.getLastBlock().getIndex();
+				index = blockchain.getLastBlock().getIndex();
 				int difference = 1;
 				while (true) {
 					if (index < 0) {
@@ -197,8 +202,18 @@ public class Node {
 				System.out.println("You're forked on block with index : " + index);
 				blockchain.removeForkedBlocks(index);
 			}
+			sendingJSON = new JSONObject();
+			for (int i = index; i < peer.getBlockchainHeight() - index - 1; i++) {
+				sendingJSON.put("block",blockchain.getBlockByIndex(i).toJSON());
+				stream.println(sendingJSON.toString());
+				receivingJSON = new JSONObject(scanner.nextLine());
+				Block block = new Block();
+				block.fromJSON(receivingJSON);
+				blockchain.addBlock(block);
+			}
+			
+			
 			blockchain.setSynching(false);
-
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
