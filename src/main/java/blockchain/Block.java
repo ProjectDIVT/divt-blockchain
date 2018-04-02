@@ -12,13 +12,13 @@ public class Block {
 	private long timestamp;
 	private long nonce;
 	private long blockchainDifficulty;
+
+	public long getBlockchainDifficulty() {
+		return blockchainDifficulty;
+	}
 	
 	public void setBlockchainDifficulty(long blockchainDifficulty) {
 		this.blockchainDifficulty = blockchainDifficulty;
-	}
-	
-	public long getBlockchainDifficulty() {
-		return blockchainDifficulty;
 	}
 
 	public int getIndex() {
@@ -61,13 +61,6 @@ public class Block {
 		this.nonce = nonce;
 	}
 
-	public String toHash(){
-		return CryptoUtil.hash(this.index + this.previousHash + this.timestamp + this.nonce);
-	}
-	
-	public long getDifficulty(){
-		return Long.parseLong(this.hash.substring(0, 15),16);
-	}
 	public int getBlockFile() {
 		return blockFile;
 	}
@@ -75,7 +68,31 @@ public class Block {
 	public void setBlockFile(int blockFile) {
 		this.blockFile = blockFile;
 	}
+
+	/**
+	 * Hashes the block parameters and returns it.
+	 * 
+	 * @return String The hash of the block.
+	 */
+	public String toHash(){
+		return CryptoUtil.hash(this.index + this.previousHash + this.timestamp + this.nonce);
+	}
 	
+	/**
+	 * Returns the first 15 characters from the block hash as a number
+	 * 
+	 * @return long The hash of the block as a number.
+	 */
+	public long getDifficulty(){
+		return Long.parseLong(this.hash.substring(0, 15),16);
+	}
+	
+	/**
+	 * Returns the first block of the network
+	 * also known as the genesis block.
+	 * 
+	 * @return Block The genesis block.
+	 */
 	static Block getGenesis(){
 		Block block = new Block();
 		block.index = 0;
@@ -87,6 +104,11 @@ public class Block {
 		return block;
 	}
 	
+	/**
+	 * Creates a JSON with the block parameters.
+	 * 
+	 * @return JSONObject The block as a JSON.
+	 */
 	public JSONObject toJSON(){
         JSONObject json = new JSONObject();
         json.put("index", this.getIndex());
@@ -98,6 +120,12 @@ public class Block {
         json.put("blockFile", this.getBlockFile());
         return json;
     }
+	
+	/**
+	 * Sets the block parameters from the JSON.
+	 * 
+	 * @param json The JSON to get the parameters from.
+	 */
     public void fromJSON(JSONObject json) {
         this.setIndex(json.getInt("index"));
         this.setNonce(json.getLong("nonce"));
@@ -108,10 +136,22 @@ public class Block {
         this.setBlockFile(json.getInt("blockFile"));
     }
 
-	
+	/**
+	 * Returns the block parameters as a line.
+	 * 
+	 * @return String The block parameters on a single line.
+	 */
 	public String toFile() {
 		return index + " " + hash + " " + previousHash + " " + timestamp + " " + nonce + " " + blockchainDifficulty +"\n";
 	}
+	
+	/**
+	 * Returns a Block instance from a file line.
+	 * 
+	 * @param line The line from a file with block parameters.
+	 * @param blockFile The number of the block file.
+	 * @return Block The block from the line.
+	 */
 	public static Block fromFile(String line, int blockFile) {
 		String [] params = line.split(" ");  	//Have to be validate 
 		Block block = new Block();
