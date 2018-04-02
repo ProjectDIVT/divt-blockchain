@@ -201,17 +201,15 @@ public class Node {
 				System.out.println("You're forked on block with index : " + index);
 				blockchain.removeForkedBlocks(index);
 			}
-			if (blockchain.getBlockchainHeight() != peer.getBlockchainHeight()) {
-				for (int i = blockchain.getBlockchainHeight(); i < peer.getBlockchainHeight() - 1; i++) {
-					sendingJSON = new JSONObject();
-					sendingJSON.put("command", "getblock");
-					sendingJSON.put("index", i);
-					stream.println(sendingJSON.toString());
-					receivingJSON = new JSONObject(scanner.nextLine());
-					Block block = new Block();
-					block.fromJSON(receivingJSON.getJSONObject("block"));
-					blockchain.addBlock(block);
-				}
+			for (int i = blockchain.getBlockchainHeight(); i < peer.getBlockchainHeight(); i++) {
+				sendingJSON = new JSONObject();
+				sendingJSON.put("command", "getblock");
+				sendingJSON.put("index", i);
+				stream.println(sendingJSON.toString());
+				receivingJSON = new JSONObject(scanner.nextLine());
+				Block block = new Block();
+				block.fromJSON(receivingJSON.getJSONObject("block"));
+				blockchain.addBlock(block);
 			}
 			blockchain.setSynching(false);
 		} catch (IOException e) {
