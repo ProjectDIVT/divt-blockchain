@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.PrintStream;
 import java.net.ConnectException;
 import java.net.InetSocketAddress;
+import java.net.NoRouteToHostException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketException;
@@ -28,8 +29,8 @@ public class Node {
 	// join -->
 	// Peer --> IP --> Node --> listener -->
 	public Node(Blockchain blockchain) {
+		peers.add(new Peer("78.130.133.28", 0));
 		peers.add(new Peer("87.118.159.27", 0));
-		// peers.add(new Peer("78.130.133.28", 0));
 		this.blockchain = blockchain;
 		EventListener();
 		new Thread(() -> {
@@ -38,7 +39,6 @@ public class Node {
 			} catch (ConcurrentModificationException ex) {
 			}
 			Comparator<Peer> comparator = Comparator.comparing(Peer::getBlockchainHeight);
-			// peers.stream().forEach(e -> System.out.println(e.getBlockchainHeight()));
 			Peer longestChainPeer = peers.stream().max(comparator).get();
 			syncBlockchain(longestChainPeer);
 			blockchain.setSynching(false);
@@ -47,17 +47,15 @@ public class Node {
 
 	public void EventListener() {
 		new Thread(() -> {
-			ServerSocket serverSocket = null;
-			try {
-				serverSocket = new ServerSocket(14200);
+			try (ServerSocket serverSocket = new ServerSocket(14200)) {
 				while (true) {
 					Socket socket = serverSocket.accept();
+					System.out.println("Received from: " + socket.getInetAddress().getHostAddress());
 					Scanner scanner = new Scanner(socket.getInputStream());
 					PrintStream printStream = new PrintStream(socket.getOutputStream());
 					while (scanner.hasNext()) {
 						JSONObject receivingJSON = new JSONObject(scanner.nextLine());
 						JSONObject sendingJSON;
-						System.out.println("Received from: " + socket.getInetAddress().getHostAddress());
 						switch (receivingJSON.getString("command")) {
 						case "join":
 							sendingJSON = new JSONObject();
@@ -93,6 +91,7 @@ public class Node {
 							break;
 						}
 					}
+					scanner.close();
 				}
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
@@ -103,12 +102,11 @@ public class Node {
 	}
 
 	public void join(Peer peer) {
-		Socket socket;
 		Scanner scanner = null;
 		try {
 			JSONObject sendingJSON = new JSONObject();
 			System.out.println("Sended to: " + peer.getIP());
-			socket = new Socket();
+			Socket socket = new Socket();
 			socket.connect(new InetSocketAddress(peer.getIP(), 14200), 5000);
 			scanner = new Scanner(socket.getInputStream());
 			PrintStream stream = new PrintStream(socket.getOutputStream());
@@ -122,7 +120,7 @@ public class Node {
 				peers.add(new Peer(jsonPeer.getString("host"), jsonPeer.getInt("height")));
 			});
 			scanner.close();
-		} catch (SocketTimeoutException e) {
+		} catch (SocketTimeoutException | NoRouteToHostException e) {
 			System.out.println("Cannot reach the peer: " + peer.getIP());
 			return;
 		} catch (UnknownHostException e) {
@@ -132,7 +130,7 @@ public class Node {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-			
+
 	}
 
 	public void syncBlockchain(Peer peer) {
@@ -146,23 +144,25 @@ public class Node {
 			PrintStream stream = new PrintStream(socket.getOutputStream());
 			json.put("command", "getblockhash");
 			json.put("index", blockchain.getBlockchainHeight() - 1);
-			System.out.println("dsa");
 			stream.println(json.toString());
 			JSONObject receivingJSON = new JSONObject(scanner.nextLine());
-			System.out.println("sad");
 			String hash = receivingJSON.getString("blockhash");
+			System.out.println(hash);
 			if (!hash.equals(blockchain.getLastBlock().getHash())) {
 				int index = blockchain.getLastBlock().getIndex();
 				int difference = 1;
 				while (true) {
-
+					if (index < 0) {
+						difference /= 2;
+						index += difference;
+						continue;
+					}
 					sendingJSON = new JSONObject();
 					sendingJSON.put("command", "getblockhash");
 					sendingJSON.put("index", index);
 					stream.println(sendingJSON.toString());
 					receivingJSON = new JSONObject(scanner.nextLine());
 					hash = receivingJSON.getString("blockhash");
-
 					if (blockchain.getBlockByIndex(index).getHash().equals(hash)) {
 						difference /= 2;
 						index += difference;
@@ -185,9 +185,9 @@ public class Node {
 					}
 				}
 				System.out.println("You're forked on block with index : " + index);
-				blockchain.removeForkedBlocks(index);	
+				blockchain.removeForkedBlocks(index);
 			}
-				blockchain.setSynching(false);
+			blockchain.setSynching(false);
 
 		} catch (IOException e) {
 			// TODO Auto-generated catch block

@@ -11,10 +11,14 @@ public class Block {
 	private String hash;
 	private long timestamp;
 	private long nonce;
-	private long difficulty;
+	private long blockchainDifficulty;
 	
-	public void setDifficulty(long difficulty) {
-		this.difficulty = difficulty;
+	public void setBlockchainDifficulty(long blockchainDifficulty) {
+		this.blockchainDifficulty = blockchainDifficulty;
+	}
+	
+	public long getBlockchainDifficulty() {
+		return blockchainDifficulty;
 	}
 
 	public int getIndex() {
@@ -101,7 +105,7 @@ public class Block {
 	}
 	
 	public String toFile() {
-		return index + " " + hash + " " + previousHash + " " + timestamp + " " + nonce + " " + difficulty +"\n";
+		return index + " " + hash + " " + previousHash + " " + timestamp + " " + nonce + " " + blockchainDifficulty +"\n";
 	}
 	public static Block fromFile(String line, int blockFile) {
 		String [] params = line.split(" ");  	//Have to be validate 
@@ -112,7 +116,7 @@ public class Block {
 		block.previousHash = params[2];
 		block.timestamp = Long.parseLong(params[3]);
 		block.nonce = Long.parseLong(params[4]);
-		block.difficulty = Long.parseLong(params[5]);
+		block.blockchainDifficulty = Long.parseLong(params[5]); //Validate
 		block.setBlockFile(blockFile);
 		return block;
 	}

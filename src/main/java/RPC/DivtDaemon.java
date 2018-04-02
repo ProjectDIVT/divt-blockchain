@@ -35,15 +35,11 @@ public class DivtDaemon implements RMIInterface {
 			e.printStackTrace();
 		}
 		blockchain = new Blockchain();
-
 		while (blockchain.isReadingFiles) {
 		}
-		System.out.println("123");
 		node = new Node(blockchain);
-		System.out.println("321");
 		miner = new Miner(blockchain);
 		miner.mine();
-		System.out.println("asd");
 
 	}
 
