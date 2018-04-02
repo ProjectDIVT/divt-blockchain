@@ -21,7 +21,7 @@ public class Blockchain {
 	Path mainPath = null;
 	Path blocksConfig = null;
 	public Boolean isReadingFiles = true;
-	public Boolean isSynching = true;
+	volatile public Boolean isSynching = true;
 
 	public Blockchain() {
 		String OS = System.getProperty("os.name");
