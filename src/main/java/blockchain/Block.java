@@ -101,12 +101,11 @@ public class Block {
         this.setIndex(json.getInt("index"));
         this.setNonce(json.getLong("nonce"));
         this.setPreviousHash(json.getString("previousHash"));
-        this.setHash(json.getString("hasg"));
+        this.setHash(json.getString("hash"));
         this.setTimestamp(json.getLong("timestamp"));
         this.setBlockchainDifficulty(json.getLong("blockchainDifficulty"));
     }
 
-	
 	public String toFile() {
 		return index + " " + hash + " " + previousHash + " " + timestamp + " " + nonce + " " + blockchainDifficulty +"\n";
 	}

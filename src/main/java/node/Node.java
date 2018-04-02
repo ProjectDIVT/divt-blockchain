@@ -30,7 +30,7 @@ public class Node {
 	// join -->
 	// Peer --> IP --> Node --> listener -->
 	public Node(Blockchain blockchain) {
-		peers.add(new Peer("78.130.133.28", 0));
+		// peers.add(new Peer("78.130.133.28", 0));
 		peers.add(new Peer("87.118.159.27", 0));
 		this.blockchain = blockchain;
 		EventListener();
@@ -92,7 +92,7 @@ public class Node {
 								case "getblock":
 									sendingJSON = new JSONObject();
 									sendingJSON.put("block",
-											blockchain.getBlockByIndex(receivingJSON.getInt("index")).toJSON().toString());
+											blockchain.getBlockByIndex(receivingJSON.getInt("index")).toJSON());
 									printStream.println(sendingJSON.toString());
 									break;
 
@@ -152,7 +152,6 @@ public class Node {
 		Socket socket = new Socket();
 		JSONObject json = new JSONObject();
 		JSONObject sendingJSON;
-		int index = 0;
 		try {
 			socket.connect(new InetSocketAddress(peer.getIP(), 14200), 5000);
 			Scanner scanner = new Scanner(socket.getInputStream());
@@ -164,7 +163,7 @@ public class Node {
 			String hash = receivingJSON.getString("blockhash");
 			System.out.println(hash);
 			if (!hash.equals(blockchain.getLastBlock().getHash())) {
-				index = blockchain.getLastBlock().getIndex();
+				int index = blockchain.getLastBlock().getIndex();
 				int difference = 1;
 				while (true) {
 					if (index < 0) {
@@ -202,17 +201,18 @@ public class Node {
 				System.out.println("You're forked on block with index : " + index);
 				blockchain.removeForkedBlocks(index);
 			}
-			sendingJSON = new JSONObject();
-			for (int i = index; i < peer.getBlockchainHeight() - index - 1; i++) {
-				sendingJSON.put("block",blockchain.getBlockByIndex(i).toJSON());
-				stream.println(sendingJSON.toString());
-				receivingJSON = new JSONObject(scanner.nextLine());
-				Block block = new Block();
-				block.fromJSON(receivingJSON);
-				blockchain.addBlock(block);
+			if (blockchain.getBlockchainHeight() != peer.getBlockchainHeight()) {
+				for (int i = blockchain.getBlockchainHeight(); i < peer.getBlockchainHeight() - 1; i++) {
+					sendingJSON = new JSONObject();
+					sendingJSON.put("command", "getblock");
+					sendingJSON.put("index", i);
+					stream.println(sendingJSON.toString());
+					receivingJSON = new JSONObject(scanner.nextLine());
+					Block block = new Block();
+					block.fromJSON(receivingJSON.getJSONObject("block"));
+					blockchain.addBlock(block);
+				}
 			}
-			
-			
 			blockchain.setSynching(false);
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
