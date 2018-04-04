@@ -39,6 +39,7 @@ public class Node {
 			}
 			Comparator<Peer> comparator = Comparator.comparing(Peer::getBlockchainHeight);
 			Peer longestChainPeer = peers.stream().max(comparator).get();
+			
 			syncBlockchain(longestChainPeer);
 			blockchain.setSynching(false);
 		}).start();
@@ -46,72 +47,7 @@ public class Node {
 
 	public void EventListener() {
 		new Thread(() -> {
-			try (ServerSocket serverSocket = new ServerSocket(14200)) {
-				while (true) {
-					Socket socket = serverSocket.accept();
-					new Thread(() -> {
-						System.out.println("Received from: " + socket.getInetAddress().getHostAddress());
-						Scanner scanner;
-						PrintStream printStream;
-						try {
-							scanner = new Scanner(socket.getInputStream());
-							printStream = new PrintStream(socket.getOutputStream());
-							while (scanner.hasNext()) {
-								JSONObject receivingJSON = new JSONObject(scanner.nextLine());
-								JSONObject sendingJSON;
-								switch (receivingJSON.getString("command")) {
-								case "join":
-									sendingJSON = new JSONObject();
-									JSONArray array = new JSONArray();
-									peers.add(new Peer(socket.getInetAddress().getHostAddress(),
-											receivingJSON.getInt("height")));
-									peers.forEach(e -> {
-										if (e.getIP().equals(socket.getInetAddress().getHostAddress())) {
-											e.setBlockchainHeight(receivingJSON.getInt("height"));
-										}
-									});
-									sendingJSON.put("height", blockchain.getBlockchainHeight());
-									peers.stream().forEach(e -> {
-										JSONObject peer = new JSONObject();
-										peer.put("host", e.getIP());
-										peer.put("height", e.getBlockchainHeight());
-										array.put(peer);
-									});
-									sendingJSON.put("peers", array);
-									printStream.println(sendingJSON.toString()); // send to peers in the Hashset in form
-																					// of json
-									break;
-								case "getblockhash":
-									sendingJSON = new JSONObject();
-									sendingJSON.put("blockhash",
-											blockchain.getBlockByIndex(receivingJSON.getInt("index")).getHash());
-									printStream.println(sendingJSON.toString());
-									break;
-								case "getblock":
-									sendingJSON = new JSONObject();
-									sendingJSON.put("block",
-											blockchain.getBlockByIndex(receivingJSON.getInt("index")).toJSON());
-									printStream.println(sendingJSON.toString());
-									break;
-								case "leave":
-									peers.remove(new Peer(socket.getInetAddress().getHostAddress(), 0));
-									break;
-								default:
-									break;
-								}
-							}
-							scanner.close();
-						} catch (IOException e1) {
-							// TODO Auto-generated catch block
-							e1.printStackTrace();
-						}
-					}).start();
-				}
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-
+			new EventProcessor(blockchain, peers);
 		}).start();
 	}
 
@@ -121,13 +57,17 @@ public class Node {
 			JSONObject sendingJSON = new JSONObject();
 			System.out.println("Sended to: " + peer.getIP());
 			Socket socket = new Socket();
+			
 			socket.connect(new InetSocketAddress(peer.getIP(), 14200), 5000);
 			scanner = new Scanner(socket.getInputStream());
+			
 			PrintStream stream = new PrintStream(socket.getOutputStream());
 			sendingJSON.put("command", "join");
 			sendingJSON.put("height", blockchain.getBlockchainHeight());
-			stream.println(sendingJSON.toString());
+			stream.println(sendingJSON.toString()); 
+			
 			JSONObject json = new JSONObject(scanner.nextLine());
+			
 			peer.setBlockchainHeight(json.getInt("height"));
 			json.getJSONArray("peers").forEach(e -> {
 				JSONObject jsonPeer = (JSONObject) e;
