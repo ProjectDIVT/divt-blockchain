@@ -10,10 +10,12 @@ import java.util.Scanner;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import blockchain.Block;
 import blockchain.Blockchain;
+import miner.Miner;
 
 public class EventProcessor {
-	public EventProcessor(Blockchain blockchain, HashSet<Peer> peers) {
+	public EventProcessor(Blockchain blockchain, HashSet<Peer> peers, Miner miner) {
 		try (ServerSocket serverSocket = new ServerSocket(14200)) {
 			while (true) {
 				Socket socket = serverSocket.accept();
@@ -27,21 +29,21 @@ public class EventProcessor {
 						while (scanner.hasNext()) {
 							JSONObject receivingJSON = new JSONObject(scanner.nextLine());
 							JSONObject sendingJSON;
-							
+
 							switch (receivingJSON.getString("command")) {
 							case "join":
 								sendingJSON = new JSONObject();
 								JSONArray array = new JSONArray();
-								
-								peers.add(new Peer(socket.getInetAddress().getHostAddress(), 
-										receivingJSON.getInt("height"))); 
-								peers.forEach(e -> {	 
+
+								peers.add(new Peer(socket.getInetAddress().getHostAddress(),
+										receivingJSON.getInt("height")));
+								peers.forEach(e -> {
 									if (e.getIP().equals(socket.getInetAddress().getHostAddress())) {
 										e.setBlockchainHeight(receivingJSON.getInt("height"));
 									}
 								});
-								sendingJSON.put("height", blockchain.getBlockchainHeight()); 
-								
+								sendingJSON.put("height", blockchain.getBlockchainHeight());
+
 								peers.stream().forEach(e -> {
 									JSONObject peer = new JSONObject();
 									peer.put("host", e.getIP());
@@ -49,8 +51,8 @@ public class EventProcessor {
 									array.put(peer);
 								});
 								sendingJSON.put("peers", array);
-								printStream.println(sendingJSON.toString()); 
-																				
+								printStream.println(sendingJSON.toString());
+
 								break;
 							case "getblockhash":
 								sendingJSON = new JSONObject();
@@ -67,6 +69,24 @@ public class EventProcessor {
 							case "leave":
 								peers.remove(new Peer(socket.getInetAddress().getHostAddress(), 0));
 								break;
+
+							case "sendLatestBlock":
+								new Thread(() -> {
+									Block block = (Block) receivingJSON.get("sendLatestBlock");
+									miner.stopMining();
+									miner.shutDownExecutor();
+									blockchain.addBlock(block, false);
+									try {
+										Thread.sleep(500);
+									} catch (InterruptedException e) {
+										// TODO Auto-generated catch block
+										e.printStackTrace();
+									}
+									miner.setMining(true);
+									miner.mine();
+								});
+								break;
+
 							default:
 								break;
 							}

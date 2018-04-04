@@ -11,10 +11,13 @@ import java.util.List;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import util.Emitter;
+
 public class Blockchain {
 
 	final int blockTargetTime = 60;
 	private long blockchainDifficulty = (long) 1e15;
+	private Emitter emitter;
 
 	List<Block> blocks = new ArrayList<Block>();
 	List<Path> blkPaths = new ArrayList<Path>();
@@ -117,8 +120,8 @@ public class Blockchain {
 		return blocks.get(blocks.size() - 1);
 	}
 
-	public void addBlock(Block block) {
-		// Validate
+	public void addBlock(Block block, boolean emit) {
+		// Validat
 		Block previousBlock = getLastBlock();
 		int fileNumber = previousBlock.getBlockFile();
 		modifyBlockchainDifficulty((double) ((block.getTimestamp() - previousBlock.getTimestamp()) / blockTargetTime));
@@ -141,10 +144,13 @@ public class Blockchain {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+		if (emit == true) {
+			emitter.blockAdded(block);
+		}
 		blocks.add(block);
 		System.out.println(block.getIndex());
 		System.out.println(block.getHash());
-		// Emit to Node Class
+		
 	}
 
 	public long getBlockchainDifficulty() {
@@ -185,14 +191,14 @@ public class Blockchain {
 		}
 		Path path = Paths.get(mainPath.toString(), "blk" + blocks.get(index).getBlockFile() + ".txt");
 		try {
-		StringBuilder fileContent = new StringBuilder();
-		Files.lines(path).filter(e -> {
+			StringBuilder fileContent = new StringBuilder();
+			Files.lines(path).filter(e -> {
 				int lineIndex = Integer.parseInt(e.split(" ")[0]);
 				return lineIndex <= index;
 			}).forEach(e -> fileContent.append(e + "\n"));
-		Files.delete(path);
-		Files.createFile(path);
-		Files.write(path, fileContent.toString().getBytes());
+			Files.delete(path);
+			Files.createFile(path);
+			Files.write(path, fileContent.toString().getBytes());
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -205,5 +211,9 @@ public class Blockchain {
 
 	public void setSynching(boolean isSynching) {
 		this.isSynching = isSynching;
+	}
+
+	public void setEmitter(Emitter emitter) {
+		this.emitter = emitter;
 	}
 }

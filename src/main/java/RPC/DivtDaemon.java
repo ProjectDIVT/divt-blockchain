@@ -39,6 +39,7 @@ public class DivtDaemon implements RMIInterface {
 		}
 		node = new Node(blockchain);
 		miner = new Miner(blockchain);
+		node.setMiner(miner);
 		miner.mine();
 
 	}

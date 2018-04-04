@@ -22,15 +22,19 @@ import org.json.JSONObject;
 
 import blockchain.Block;
 import blockchain.Blockchain;
+import miner.Miner;
+import util.Emitter;
 
-public class Node {
+public class Node implements Emitter{
 	Blockchain blockchain;
 	static HashSet<Peer> peers = new HashSet<Peer>();
+	Miner miner;
 
 	public Node(Blockchain blockchain) {
 		// peers.add(new Peer("78.130.133.28", 0));
 		peers.add(new Peer("87.118.159.27", 0));
 		this.blockchain = blockchain;
+		blockchain.setEmitter(this);
 		EventListener();
 		new Thread(() -> {
 			try {
@@ -47,7 +51,7 @@ public class Node {
 
 	public void EventListener() {
 		new Thread(() -> {
-			new EventProcessor(blockchain, peers);
+			new EventProcessor(blockchain, peers, miner);
 		}).start();
 	}
 
@@ -149,7 +153,7 @@ public class Node {
 				receivingJSON = new JSONObject(scanner.nextLine());
 				Block block = new Block();
 				block.fromJSON(receivingJSON.getJSONObject("block"));
-				blockchain.addBlock(block);
+				blockchain.addBlock(block, false);
 			}
 			blockchain.setSynching(false);
 		} catch (IOException e) {
@@ -174,5 +178,27 @@ public class Node {
 			}
 
 		});
+	}
+
+	@Override
+	public void blockAdded(Block block) {
+		Socket socket = new Socket();
+		
+		peers.stream().forEach(e -> {
+			JSONObject sendingJSON = new JSONObject();
+			sendingJSON.put("command", "sendLatestBlock");
+			sendingJSON.put("newBlock", block.toJSON());
+			try {
+				socket.connect(new InetSocketAddress(e.getIP(), 14200), 5000);
+				PrintStream stream = new PrintStream(socket.getOutputStream());
+				stream.println(sendingJSON.toString());
+			} catch (IOException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
+		});
+	}
+	public void setMiner(Miner miner) {
+		this.miner = miner;
 	}
 }

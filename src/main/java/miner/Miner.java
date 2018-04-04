@@ -28,7 +28,7 @@ public class Miner {
 				if (!blockchain.isSynching()) {
 					Block block = generateNextBlock(blockchain);
 					if (block.getIndex() != 0) {
-						blockchain.addBlock(block);
+						blockchain.addBlock(block, true);
 					}
 				}
 			}
@@ -42,7 +42,6 @@ public class Miner {
 		int index = previousBlock.getIndex() + 1;
 		String previousHash = previousBlock.getHash();
 		Block newBlock = new Block();
-		threads = 2;
 
 		executor = Executors.newFixedThreadPool(threads); //
 		for (int i = 0; i < threads; i++) {
