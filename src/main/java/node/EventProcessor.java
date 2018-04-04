@@ -21,10 +21,8 @@ public class EventProcessor {
 				Socket socket = serverSocket.accept();
 				new Thread(() -> {
 					System.out.println("Received from: " + socket.getInetAddress().getHostAddress());
-					Scanner scanner;
 					PrintStream printStream;
-					try {
-						scanner = new Scanner(socket.getInputStream());
+					try (Scanner scanner = new Scanner(socket.getInputStream())) {
 						printStream = new PrintStream(socket.getOutputStream());
 						while (scanner.hasNext()) {
 							JSONObject receivingJSON = new JSONObject(scanner.nextLine());
@@ -69,10 +67,10 @@ public class EventProcessor {
 							case "leave":
 								peers.remove(new Peer(socket.getInetAddress().getHostAddress(), 0));
 								break;
-
 							case "sendLatestBlock":
 								new Thread(() -> {
-									Block block = (Block) receivingJSON.get("sendLatestBlock");
+									Block block = new Block();
+									block.fromJSON(receivingJSON.getJSONObject("newBlock"));
 									miner.stopMining();
 									miner.shutDownExecutor();
 									blockchain.addBlock(block, false);
@@ -84,14 +82,13 @@ public class EventProcessor {
 									}
 									miner.setMining(true);
 									miner.mine();
-								});
+								}).start();
 								break;
 
 							default:
 								break;
 							}
 						}
-						scanner.close();
 					} catch (IOException e1) {
 						// TODO Auto-generated catch block
 						e1.printStackTrace();

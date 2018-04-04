@@ -103,6 +103,7 @@ public class DivtCli {
 		builder.append("\n");
 		builder.append("== Mining ==\n");
 		builder.append("setmining\n");
+		builder.append("setminingthreads\n");
 		builder.append("getmininginfo\n");
 		return builder.toString();
 	}

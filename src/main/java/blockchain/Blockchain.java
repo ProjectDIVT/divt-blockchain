@@ -121,9 +121,12 @@ public class Blockchain {
 	}
 
 	public void addBlock(Block block, boolean emit) {
-		// Validat
+		// Validate
 		Block previousBlock = getLastBlock();
 		int fileNumber = previousBlock.getBlockFile();
+		if (block.getIndex() <= previousBlock.getIndex()) {
+			return; //throw BlockAssertionException
+		}
 		modifyBlockchainDifficulty((double) ((block.getTimestamp() - previousBlock.getTimestamp()) / blockTargetTime));
 		if (blkPaths.get(blkPaths.size() - 1).toFile().length() > 1024) { // The size has to be changed
 			Path newPath = Paths.get(mainPath.toString(), "blk" + (fileNumber + 1) + ".txt");
@@ -139,12 +142,12 @@ public class Blockchain {
 		block.setBlockFile(fileNumber);
 		try {
 			Files.write(blkPaths.get(fileNumber), block.toFile().getBytes(), StandardOpenOption.APPEND);
-
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		if (emit == true) {
+			System.out.println("Block sended");
 			emitter.blockAdded(block);
 		}
 		blocks.add(block);

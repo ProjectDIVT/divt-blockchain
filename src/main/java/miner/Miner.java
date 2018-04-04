@@ -33,11 +33,9 @@ public class Miner {
 				}
 			}
 		}).start();
-
 	}
 
 	private Block generateNextBlock(Blockchain blockchain) {
-
 		Block previousBlock = blockchain.getLastBlock();
 		int index = previousBlock.getIndex() + 1;
 		String previousHash = previousBlock.getHash();

@@ -25,15 +25,16 @@ import blockchain.Blockchain;
 import miner.Miner;
 import util.Emitter;
 
-public class Node implements Emitter{
+public class Node implements Emitter {
 	Blockchain blockchain;
 	static HashSet<Peer> peers = new HashSet<Peer>();
 	Miner miner;
 
-	public Node(Blockchain blockchain) {
+	public Node(Blockchain blockchain, Miner miner) {
 		// peers.add(new Peer("78.130.133.28", 0));
 		peers.add(new Peer("87.118.159.27", 0));
 		this.blockchain = blockchain;
+		this.miner = miner;
 		blockchain.setEmitter(this);
 		EventListener();
 		new Thread(() -> {
@@ -43,7 +44,7 @@ public class Node implements Emitter{
 			}
 			Comparator<Peer> comparator = Comparator.comparing(Peer::getBlockchainHeight);
 			Peer longestChainPeer = peers.stream().max(comparator).get();
-			
+
 			syncBlockchain(longestChainPeer);
 			blockchain.setSynching(false);
 		}).start();
@@ -61,17 +62,17 @@ public class Node implements Emitter{
 			JSONObject sendingJSON = new JSONObject();
 			System.out.println("Sended to: " + peer.getIP());
 			Socket socket = new Socket();
-			
+
 			socket.connect(new InetSocketAddress(peer.getIP(), 14200), 5000);
 			scanner = new Scanner(socket.getInputStream());
-			
+
 			PrintStream stream = new PrintStream(socket.getOutputStream());
 			sendingJSON.put("command", "join");
 			sendingJSON.put("height", blockchain.getBlockchainHeight());
-			stream.println(sendingJSON.toString()); 
-			
+			stream.println(sendingJSON.toString());
+
 			JSONObject json = new JSONObject(scanner.nextLine());
-			
+
 			peer.setBlockchainHeight(json.getInt("height"));
 			json.getJSONArray("peers").forEach(e -> {
 				JSONObject jsonPeer = (JSONObject) e;
@@ -182,23 +183,24 @@ public class Node implements Emitter{
 
 	@Override
 	public void blockAdded(Block block) {
-		Socket socket = new Socket();
-		
-		peers.stream().forEach(e -> {
-			JSONObject sendingJSON = new JSONObject();
-			sendingJSON.put("command", "sendLatestBlock");
-			sendingJSON.put("newBlock", block.toJSON());
-			try {
-				socket.connect(new InetSocketAddress(e.getIP(), 14200), 5000);
-				PrintStream stream = new PrintStream(socket.getOutputStream());
-				stream.println(sendingJSON.toString());
-			} catch (IOException e1) {
-				// TODO Auto-generated catch block
-				e1.printStackTrace();
-			}
-		});
+		try (Socket socket = new Socket()) {
+			peers.stream().forEach(e -> {
+				JSONObject sendingJSON = new JSONObject();
+				sendingJSON.put("command", "sendLatestBlock");
+				sendingJSON.put("newBlock", block.toJSON());
+				try {
+					socket.connect(new InetSocketAddress(e.getIP(), 14200), 5000);
+					PrintStream stream = new PrintStream(socket.getOutputStream());
+					stream.println(sendingJSON.toString());
+				} catch (IOException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
+			});
+		} catch (IOException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
 	}
-	public void setMiner(Miner miner) {
-		this.miner = miner;
-	}
+
 }
