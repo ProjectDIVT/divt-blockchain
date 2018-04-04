@@ -86,7 +86,7 @@ public class Blockchain {
 					if (Files.exists(path)) {
 						final int fileIndex = index;
 						Files.readAllLines(path).stream().forEach(e -> blocks.add(Block.fromFile(e, fileIndex)));
-						this.blockchainDifficulty = getLastBlock().getDifficulty();
+						this.blockchainDifficulty = getLastBlock().getBlockchainDifficulty();
 						index++;
 						blkPaths.add(path);
 					} else {
@@ -139,6 +139,7 @@ public class Blockchain {
 			}
 			fileNumber++;
 		}
+		block.setBlockchainDifficulty(getBlockchainDifficulty());
 		block.setBlockFile(fileNumber);
 		try {
 			Files.write(blkPaths.get(fileNumber), block.toFile().getBytes(), StandardOpenOption.APPEND);

@@ -62,7 +62,6 @@ public class Miner {
 						newBlock.setNonce(block.getNonce());
 						newBlock.setPreviousHash(block.getPreviousHash());
 						newBlock.setTimestamp(block.getTimestamp());
-						newBlock.setBlockchainDifficulty(blockchain.getBlockchainDifficulty());
 						executor.shutdownNow();
 					}
 					if (Thread.currentThread().isInterrupted()) {
