@@ -127,7 +127,7 @@ public class Blockchain {
 		if (block.getIndex() <= previousBlock.getIndex()) {
 			return; //throw BlockAssertionException
 		}
-		modifyBlockchainDifficulty((double) ((block.getTimestamp() - previousBlock.getTimestamp()) / blockTargetTime));
+		modifyBlockchainDifficulty(((block.getTimestamp() - previousBlock.getTimestamp()) / (double) blockTargetTime));
 		if (blkPaths.get(blkPaths.size() - 1).toFile().length() > 1024) { // The size has to be changed
 			Path newPath = Paths.get(mainPath.toString(), "blk" + (fileNumber + 1) + ".txt");
 			blkPaths.add(Paths.get(newPath.toString()));
