@@ -27,25 +27,25 @@ public class Blockchain {
 	volatile public Boolean isSynching = true;
 
 	public Blockchain() {
+		// Sets the main directory depending on the user's OS
 		String OS = System.getProperty("os.name");
-
 		if (OS.equals("Linux")) {
 			mainPath = Paths.get(System.getProperty("user.home"), ".divt");
-
 		} else if (OS.startsWith("Windows")) {
 			mainPath = Paths.get(System.getProperty("user.home") + "\\AppData\\Roaming\\.divt");
-
 		}
-		blocksConfig = Paths.get(mainPath.toString(), "blocksConfig");
+
+		// Creates the main directory if it doesn't exist
 		if (!Files.exists(mainPath)) {
 			try {
 				Files.createDirectory(mainPath);
 				blocks.add(Block.getGenesis());
 			} catch (IOException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 		}
+
+		blocksConfig = Paths.get(mainPath.toString(), "blocksConfig");
 		if (!Files.exists(blocksConfig)) {
 			try {
 				// BlocksConfig
@@ -66,6 +66,7 @@ public class Blockchain {
 				e.printStackTrace();
 			}
 		}
+
 		if (!Files.exists(Paths.get(mainPath.toString(), "blk0.txt"))) {
 			try {
 				Path firstFile = Paths.get(mainPath.toString(), "blk0.txt");
@@ -100,34 +101,77 @@ public class Blockchain {
 		}
 	}
 
+	/**
+	 * Returns the height of the blockchain.
+	 * 
+	 * @return int The blockchain height.
+	 */
 	public int getBlockchainHeight() {
 		return blocks.size();
 	}
 
+	/**
+	 * Returns all blocks in the blockchain.
+	 * 
+	 * @return List<Block> All blocks in the blockchain.
+	 */
 	public List<Block> getAllBlocks() {
 		return this.blocks;
 	}
 
+	/**
+	 * Returns block from given index.
+	 * 
+	 * @param index
+	 *            The index of the block.
+	 * @return Block The block with the specified index.
+	 */
 	public Block getBlockByIndex(int index) {
 		return this.blocks.get(index);
 	}
 
+	/**
+	 * Returns block from given hash of the block.
+	 * 
+	 * @param hash
+	 *            The hash of the block.
+	 * @return Block The block with the specified hash.
+	 */
 	public Block getBlockByHash(String hash) {
 		return blocks.stream().parallel().filter(block -> block.getHash().equals(hash)).findAny().orElse(null);
 	}
 
+	/**
+	 * Returns the last block in the blockchain.
+	 * 
+	 * @return Block the last block in the blockchain.
+	 */
 	public Block getLastBlock() {
 		return blocks.get(blocks.size() - 1);
 	}
 
+	/**
+	 * Adds the block to the blockchain and broadcast it to the other peers if the
+	 * new block is mined by the user.
+	 * 
+	 * @param block
+	 *            The block to be added to the blockchain.
+	 * @param emit
+	 *            If true, broadcast the new block to the other peers.
+	 */
 	public void addBlock(Block block, boolean emit) {
-		// Validate
 		Block previousBlock = getLastBlock();
 		int fileNumber = previousBlock.getBlockFile();
+
+		// Validate
+		// Move to validateBlock method
 		if (block.getIndex() <= previousBlock.getIndex()) {
-			return; //throw BlockAssertionException
+			return; // throw BlockAssertionException
 		}
-		modifyBlockchainDifficulty(((block.getTimestamp() - previousBlock.getTimestamp()) / (double) blockTargetTime));
+
+		modifyBlockchainDifficulty(block.getTimestamp(), previousBlock.getTimestamp());
+
+		// If the current blk file is bigger than than 1KB, create a new blk file
 		if (blkPaths.get(blkPaths.size() - 1).toFile().length() > 1024) { // The size has to be changed
 			Path newPath = Paths.get(mainPath.toString(), "blk" + (fileNumber + 1) + ".txt");
 			blkPaths.add(Paths.get(newPath.toString()));
@@ -141,27 +185,49 @@ public class Blockchain {
 		}
 		block.setBlockchainDifficulty(getBlockchainDifficulty());
 		block.setBlockFile(fileNumber);
+
+		// Append the block information to the file
 		try {
 			Files.write(blkPaths.get(fileNumber), block.toFile().getBytes(), StandardOpenOption.APPEND);
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+
 		if (emit == true) {
 			System.out.println("Block sended");
 			emitter.blockAdded(block);
 		}
+
 		blocks.add(block);
+
 		System.out.println(block.getIndex());
 		System.out.println(block.getHash());
-		
+
 	}
 
+	/**
+	 * Gets the current blockchain difficulty.
+	 * 
+	 * @return long The blockchain difficulty.
+	 */
 	public long getBlockchainDifficulty() {
 		return blockchainDifficulty;
 	}
 
-	public void modifyBlockchainDifficulty(double difficultyMultiplier) {
+	/**
+	 * Changes the blockchain difficulty based on the timestamps of the new and the
+	 * previous blocks.
+	 * 
+	 * @param newBlockTimestamp
+	 *            The timestamp of the new block.
+	 * @param previousBlockTimestamp
+	 *            The timestamp of the last block.
+	 */
+	public void modifyBlockchainDifficulty(double newBlockTimestamp, double previousBlockTimestamp) {
+		double difficultyMultiplier = (newBlockTimestamp - previousBlockTimestamp) / (double) this.blockTargetTime;
+
+		// Limit the blockchain difficulty change value
 		if (difficultyMultiplier > 2) {
 			difficultyMultiplier = 2;
 		}
@@ -172,18 +238,27 @@ public class Blockchain {
 		this.blockchainDifficulty *= difficultyMultiplier;
 	}
 
+	/**
+	 * Removes all forked blocks from the blockchain.
+	 * 
+	 * @param index
+	 *            The index of the last not forked block.
+	 */
 	public void removeForkedBlocks(int index) {
-		int blockIndex = blocks.get(index).getBlockFile() + 1;
+		int blockFileIndex = blocks.get(index).getBlockFile() + 1;
+
+		// Remove all blocks after the last not forked one
 		while (blocks.size() != index + 1) {
 			blocks.remove(index + 1);
 		}
-		while (true) {
-			Path path = Paths.get(mainPath.toString(), "blk" + blockIndex + ".txt");
-			if (Files.exists(path)) {
 
+		// Remove all blk files after the blk file of the last not forked block
+		while (true) {
+			Path path = Paths.get(mainPath.toString(), "blk" + blockFileIndex + ".txt");
+			if (Files.exists(path)) {
 				try {
 					Files.delete(path);
-					blockIndex++;
+					blockFileIndex++;
 
 				} catch (IOException e) {
 					// TODO Auto-generated catch block
@@ -193,6 +268,8 @@ public class Blockchain {
 				break;
 			}
 		}
+
+		// Removes all lines after the last not forked blocks in its blk file
 		Path path = Paths.get(mainPath.toString(), "blk" + blocks.get(index).getBlockFile() + ".txt");
 		try {
 			StringBuilder fileContent = new StringBuilder();
