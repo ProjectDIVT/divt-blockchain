@@ -105,6 +105,8 @@ public class Miner {
 	}
 
 	public void shutDownExecutor() {
-		executor.shutdownNow();
+		if (executor != null) {
+			executor.shutdownNow();
+		}
 	}
 }

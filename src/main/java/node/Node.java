@@ -31,15 +31,16 @@ public class Node implements Emitter {
 	Miner miner;
 
 	public Node(Blockchain blockchain, Miner miner) {
-		// peers.add(new Peer("78.130.133.28", 0));
+		peers.add(new Peer("78.130.133.28", 0));
 		peers.add(new Peer("87.118.159.27", 0));
+		peers.add(new Peer("10.77.10.169", 0));
 		this.blockchain = blockchain;
 		this.miner = miner;
 		blockchain.setEmitter(this);
 		EventListener();
 		new Thread(() -> {
 			try {
-				peers.stream().forEach(this::join);
+				peers.parallelStream().forEach(this::join);
 			} catch (ConcurrentModificationException ex) {
 			}
 			Comparator<Peer> comparator = Comparator.comparing(Peer::getBlockchainHeight);
@@ -86,8 +87,7 @@ public class Node implements Emitter {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			System.out.println("Cannot connect to " + peer.getIP());
 		}
 
 	}
@@ -183,8 +183,9 @@ public class Node implements Emitter {
 
 	@Override
 	public void blockAdded(Block block) {
-		try (Socket socket = new Socket()) {
-			peers.stream().forEach(e -> {
+		peers.parallelStream().forEach(e -> {
+			try (Socket socket = new Socket()) {
+				System.out.println("Sending the new block to " + e.getIP());
 				JSONObject sendingJSON = new JSONObject();
 				sendingJSON.put("command", "sendLatestBlock");
 				sendingJSON.put("newBlock", block.toJSON());
@@ -193,14 +194,14 @@ public class Node implements Emitter {
 					PrintStream stream = new PrintStream(socket.getOutputStream());
 					stream.println(sendingJSON.toString());
 				} catch (IOException e1) {
-					// TODO Auto-generated catch block
-					e1.printStackTrace();
+					System.out.println("Cannot send to " + e.getIP());
 				}
-			});
-		} catch (IOException e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
-		}
+			} catch (IOException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
+		});
+
 	}
 
 }

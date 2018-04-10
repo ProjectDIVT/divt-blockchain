@@ -159,7 +159,7 @@ public class Blockchain {
 	 * @param emit
 	 *            If true, broadcast the new block to the other peers.
 	 */
-	public void addBlock(Block block, boolean emit) {
+	synchronized public void addBlock(Block block, boolean emit) {
 		Block previousBlock = getLastBlock();
 		int fileNumber = previousBlock.getBlockFile();
 
