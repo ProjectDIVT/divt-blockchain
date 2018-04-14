@@ -5,6 +5,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -15,7 +16,7 @@ import util.Emitter;
 
 public class Blockchain {
 
-	final int blockTargetTime = 60;
+	public final int blockTargetTime = 60;
 	private long blockchainDifficulty = (long) 1e15;
 	private Emitter emitter;
 
@@ -336,6 +337,10 @@ public class Blockchain {
 		if (!previousBlock.getHash().equals(block.getPreviousHash())) {
 			throw new ValidationBlockException(
 					"Invalid previoushash: expected " + previousBlock.getHash() + " got " + block.getPreviousHash());			
+		}
+		
+		if (block.getTimestamp() < previousBlock.getTimestamp() || block.getTimestamp() > Instant.now().getEpochSecond()) {
+			throw new ValidationBlockException("Invalid timestamp");
 		}
 
 		double multiplier = (block.getTimestamp() - previousBlock.getTimestamp()) / (double) blockTargetTime;
