@@ -96,7 +96,7 @@ public class Block {
 		Block block = new Block();
 		block.index = 0;
 		block.previousHash = "0";
-		block.hash = "0";
+		block.hash = "0000000000000000";
 		block.timestamp = 0;
 		block.nonce = 0;
 		block.blockFile = 0;

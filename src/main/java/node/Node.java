@@ -35,6 +35,7 @@ public class Node implements Emitter {
 		peers.add(new Peer("78.130.133.28", 0));
 		peers.add(new Peer("87.118.159.27", 0));
 		peers.add(new Peer("10.77.10.169", 0));
+		peers.add(new Peer("10.77.10.162", 0));
 		this.blockchain = blockchain;
 		this.miner = miner;
 		blockchain.setEmitter(this);

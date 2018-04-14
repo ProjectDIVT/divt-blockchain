@@ -89,14 +89,12 @@ public class Blockchain {
 						blkPaths.add(path);
 						Files.readAllLines(path).stream().forEach(e -> {
 							try {
-								
 								Block block = Block.fromFile(e, fileIndex);
-								Block previousBlock = block.getIndex() == 0 ? null : getLastBlock();
-								
-								validateBlock(block, previousBlock);
+								validateBlock(block);
 								blocks.add(block);
 							} catch (ValidationBlockException ex) {
 								System.out.println(ex.getMessage());
+								return;
 							}
 						});
 						this.blockchainDifficulty = getLastBlock().getBlockchainDifficulty();
@@ -175,7 +173,7 @@ public class Blockchain {
 		System.out.println("getIndex " + block.getIndex());
 		Block previousBlock = getLastBlock();
 		int fileNumber = previousBlock.getBlockFile();
-		validateBlock(block, previousBlock);
+		validateBlock(block);
 
 		modifyBlockchainDifficulty(block.getTimestamp(), previousBlock.getTimestamp());
 
@@ -191,7 +189,6 @@ public class Blockchain {
 			}
 			fileNumber++;
 		}
-		block.setBlockchainDifficulty(getBlockchainDifficulty());
 		block.setBlockFile(fileNumber);
 
 		// Append the block information to the file
@@ -211,7 +208,6 @@ public class Blockchain {
 
 		System.out.println(block.getIndex());
 		System.out.println(block.getHash());
-
 	}
 
 	/**
@@ -315,7 +311,7 @@ public class Blockchain {
 	 *            The last block in the blockchain
 	 * @throws ValidationBlockException
 	 */
-	public void validateBlock(Block block, Block previousBlock) throws ValidationBlockException {
+	public void validateBlock(Block block) throws ValidationBlockException {
 		if (block.getIndex() == 0) {
 			if (!block.getHash().equals("0000000000000000") || !block.getPreviousHash().equals("0")
 					|| block.getBlockchainDifficulty() != 1e15 || block.getDifficulty() != 0
@@ -326,7 +322,7 @@ public class Blockchain {
 				return;
 			}
 		}
-
+		Block previousBlock = getLastBlock();
 		// Check if the block is the last one
 		if (block.getIndex() != previousBlock.getIndex() + 1) {
 			throw new ValidationBlockException(
@@ -350,9 +346,9 @@ public class Blockchain {
 			multiplier = 0.5;
 		}
 		// Check if the blockchain difficulty of the new block is correct
-		if (previousBlock.getBlockchainDifficulty() * multiplier != block.getBlockchainDifficulty()) {
+		if ((long) (previousBlock.getBlockchainDifficulty() * multiplier) != block.getBlockchainDifficulty()) {
 			throw new ValidationBlockException(
-					"Invalid blockchainDifficulty: expected " + (previousBlock.getBlockchainDifficulty() * multiplier)
+					"Invalid blockchainDifficulty: expected " + (long) (previousBlock.getBlockchainDifficulty() * multiplier)
 							+ " got " + block.getBlockchainDifficulty());
 		}
 	}

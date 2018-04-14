@@ -33,6 +33,7 @@ public class Miner {
 							blockchain.addBlock(block, true);
 						} catch (ValidationBlockException e) {
 							System.out.println("Block not added in Miner " + e.getMessage());
+							continue;
 						}
 					}
 				}
@@ -67,6 +68,15 @@ public class Miner {
 						newBlock.setNonce(block.getNonce());
 						newBlock.setPreviousHash(block.getPreviousHash());
 						newBlock.setTimestamp(block.getTimestamp());
+						
+						double difficultyMultiplier = (newBlock.getTimestamp() - previousBlock.getTimestamp()) / (double) blockchain.blockTargetTime;
+						if (difficultyMultiplier > 2) {
+							difficultyMultiplier = 2;
+						}
+						if (difficultyMultiplier < 0.5) {
+							difficultyMultiplier = 0.5;
+						}
+						newBlock.setBlockchainDifficulty((long) (previousBlock.getBlockchainDifficulty() * difficultyMultiplier));
 						executor.shutdownNow();
 					}
 					if (Thread.currentThread().isInterrupted()) {
