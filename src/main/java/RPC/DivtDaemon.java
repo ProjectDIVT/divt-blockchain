@@ -50,6 +50,7 @@ public class DivtDaemon implements RMIInterface {
 			miner.stopMining();
 			miner.shutDownExecutor();
 		} catch (RemoteException e) {
+			
 			e.printStackTrace();
 		}
 	}

@@ -25,7 +25,7 @@ public class Blockchain {
 	Path blocksConfig = null;
 	public Boolean isReadingFiles = true;
 	volatile public Boolean isSynching = true;
-
+	
 	public Blockchain() {
 		// Sets the main directory depending on the user's OS
 		String OS = System.getProperty("os.name");
@@ -86,10 +86,21 @@ public class Blockchain {
 					Path path = Paths.get(mainPath.toString(), "blk" + index + ".txt");
 					if (Files.exists(path)) {
 						final int fileIndex = index;
-						Files.readAllLines(path).stream().forEach(e -> blocks.add(Block.fromFile(e, fileIndex)));
+						blkPaths.add(path);
+						Files.readAllLines(path).stream().forEach(e -> {
+							try {
+								
+								Block block = Block.fromFile(e, fileIndex);
+								Block previousBlock = block.getIndex() == 0 ? null : getLastBlock();
+								
+								validateBlock(block, previousBlock);
+								blocks.add(block);
+							} catch (ValidationBlockException ex) {
+								System.out.println(ex.getMessage());
+							}
+						});
 						this.blockchainDifficulty = getLastBlock().getBlockchainDifficulty();
 						index++;
-						blkPaths.add(path);
 					} else {
 						break;
 					}
@@ -158,16 +169,13 @@ public class Blockchain {
 	 *            The block to be added to the blockchain.
 	 * @param emit
 	 *            If true, broadcast the new block to the other peers.
+	 * @throws ValidationBlockException
 	 */
-	synchronized public void addBlock(Block block, boolean emit) {
+	synchronized public void addBlock(Block block, boolean emit) throws ValidationBlockException {
+		System.out.println("getIndex " + block.getIndex());
 		Block previousBlock = getLastBlock();
 		int fileNumber = previousBlock.getBlockFile();
-
-		// Validate
-		// Move to validateBlock method
-		if (block.getIndex() <= previousBlock.getIndex()) {
-			return; // throw BlockAssertionException
-		}
+		validateBlock(block, previousBlock);
 
 		modifyBlockchainDifficulty(block.getTimestamp(), previousBlock.getTimestamp());
 
@@ -296,5 +304,56 @@ public class Blockchain {
 
 	public void setEmitter(Emitter emitter) {
 		this.emitter = emitter;
+	}
+
+	/**
+	 * Checks if the new block is legitimate.
+	 * 
+	 * @param block
+	 *            The new block
+	 * @param previousBlock
+	 *            The last block in the blockchain
+	 * @throws ValidationBlockException
+	 */
+	public void validateBlock(Block block, Block previousBlock) throws ValidationBlockException {
+		if (block.getIndex() == 0) {
+			if (!block.getHash().equals("0000000000000000") || !block.getPreviousHash().equals("0")
+					|| block.getBlockchainDifficulty() != 1e15 || block.getDifficulty() != 0
+					|| block.getTimestamp() != 0 || block.getNonce() != 0 || block.getBlockFile() != 0) {
+				throw new ValidationBlockException("Invalid genesis block");
+			} else {
+				blocks.add(block);
+				return;
+			}
+		}
+
+		// Check if the block is the last one
+		if (block.getIndex() != previousBlock.getIndex() + 1) {
+			throw new ValidationBlockException(
+					"Invalid index: expected " + (previousBlock.getIndex() + 1) + " got " + block.getIndex());
+		}
+		// Check if the hash is correct
+		if (!block.toHash().equals(block.getHash())) {
+			throw new ValidationBlockException("Invalid hash: expected " + block.toHash() + " got " + block.getHash());
+		}
+		// Check if the previous block is correct
+		if (!previousBlock.getHash().equals(block.getPreviousHash())) {
+			throw new ValidationBlockException(
+					"Invalid previoushash: expected " + previousBlock.getHash() + " got " + block.getPreviousHash());			
+		}
+
+		double multiplier = (block.getTimestamp() - previousBlock.getTimestamp()) / (double) blockTargetTime;
+		if (multiplier > 2) {
+			multiplier = 2;
+		}
+		if (multiplier < 0.5) {
+			multiplier = 0.5;
+		}
+		// Check if the blockchain difficulty of the new block is correct
+		if (previousBlock.getBlockchainDifficulty() * multiplier != block.getBlockchainDifficulty()) {
+			throw new ValidationBlockException(
+					"Invalid blockchainDifficulty: expected " + (previousBlock.getBlockchainDifficulty() * multiplier)
+							+ " got " + block.getBlockchainDifficulty());
+		}
 	}
 }

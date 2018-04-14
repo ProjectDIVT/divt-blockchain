@@ -22,6 +22,7 @@ import org.json.JSONObject;
 
 import blockchain.Block;
 import blockchain.Blockchain;
+import blockchain.ValidationBlockException;
 import miner.Miner;
 import util.Emitter;
 
@@ -160,6 +161,8 @@ public class Node implements Emitter {
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
+		} catch(ValidationBlockException e) {
+			System.out.println(e.getMessage());
 		}
 	}
 
@@ -181,7 +184,6 @@ public class Node implements Emitter {
 		});
 	}
 
-	@Override
 	public void blockAdded(Block block) {
 		peers.parallelStream().forEach(e -> {
 			try (Socket socket = new Socket()) {

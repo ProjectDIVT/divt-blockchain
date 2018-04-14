@@ -100,6 +100,7 @@ public class Block {
 		block.timestamp = 0;
 		block.nonce = 0;
 		block.blockFile = 0;
+		block.blockchainDifficulty = (long) 1e15;
 		return block;
 	}
 

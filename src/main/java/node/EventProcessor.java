@@ -12,6 +12,7 @@ import org.json.JSONObject;
 
 import blockchain.Block;
 import blockchain.Blockchain;
+import blockchain.ValidationBlockException;
 import miner.Miner;
 
 public class EventProcessor {
@@ -73,15 +74,18 @@ public class EventProcessor {
 									block.fromJSON(receivingJSON.getJSONObject("newBlock"));
 									miner.stopMining();
 									miner.shutDownExecutor();
-									blockchain.addBlock(block, false);
 									try {
+										blockchain.addBlock(block, false);
 										Thread.sleep(500);
 									} catch (InterruptedException e) {
 										// TODO Auto-generated catch block
 										e.printStackTrace();
+									} catch (ValidationBlockException e) {
+										System.out.println(e.getMessage());
+									} finally {
+										miner.setMining(true);
+										miner.mine();
 									}
-									miner.setMining(true);
-									miner.mine();
 								}).start();
 								break;
 

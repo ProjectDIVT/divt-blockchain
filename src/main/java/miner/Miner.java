@@ -10,6 +10,7 @@ import java.util.concurrent.TimeUnit;
 
 import blockchain.Block;
 import blockchain.Blockchain;
+import blockchain.ValidationBlockException;
 
 public class Miner {
 
@@ -28,7 +29,11 @@ public class Miner {
 				if (!blockchain.isSynching()) {
 					Block block = generateNextBlock(blockchain);
 					if (block.getIndex() != 0) {
-						blockchain.addBlock(block, true);
+						try {
+							blockchain.addBlock(block, true);
+						} catch (ValidationBlockException e) {
+							System.out.println("Block not added in Miner " + e.getMessage());
+						}
 					}
 				}
 			}
