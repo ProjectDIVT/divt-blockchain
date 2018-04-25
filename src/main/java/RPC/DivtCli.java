@@ -78,6 +78,9 @@ public class DivtCli {
 			case "getmininginfo":
 				System.out.println(stub.getMiningInfo());
 				break;
+			case "leave":
+				stub.leave();
+				break;
 			default:
 				System.out.println("No such command");
 				break;
@@ -105,6 +108,7 @@ public class DivtCli {
 		builder.append("setmining\n");
 		builder.append("setminingthreads\n");
 		builder.append("getmininginfo\n");
+		builder.append("leave\n");
 		return builder.toString();
 	}
 }
