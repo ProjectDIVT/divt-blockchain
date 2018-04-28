@@ -171,7 +171,6 @@ public class Blockchain {
 	 * @throws ValidationBlockException
 	 */
 	synchronized public void addBlock(Block block, boolean emit) throws ValidationBlockException {
-		System.out.println("getIndex " + block.getIndex());
 		Block previousBlock = getLastBlock();
 		int fileNumber = previousBlock.getBlockFile();
 		validateBlock(block);
@@ -201,14 +200,14 @@ public class Blockchain {
 		}
 
 		if (emit == true) {
-			System.out.println("Block sended");
 			emitter.blockAdded(block);
 		}
 
 		blocks.add(block);
 
-		System.out.println(block.getIndex());
-		System.out.println(block.getHash());
+		System.out.println("Block index: " + block.getIndex());
+		System.out.println("Block hash: " + block.getHash());
+		System.out.println();
 	}
 
 	/**
@@ -321,7 +320,6 @@ public class Blockchain {
 					|| block.getTimestamp() != 0 || block.getNonce() != 0 || block.getBlockFile() != 0) {
 				throw new ValidationBlockException("Invalid genesis block");
 			} else {
-				blocks.add(block);
 				return;
 			}
 		}

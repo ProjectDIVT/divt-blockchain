@@ -32,10 +32,9 @@ public class Node implements Emitter {
 	Miner miner;
 
 	public Node(Blockchain blockchain, Miner miner) {
-		peers.add(new Peer("78.130.133.28", 0));
 		peers.add(new Peer("87.118.159.27", 0));
 		peers.add(new Peer("10.77.10.169", 0));
-		peers.add(new Peer("10.77.10.162", 0));
+		peers.add(new Peer("89.25.16.151", 0));
 		this.blockchain = blockchain;
 		this.miner = miner;
 		blockchain.setEmitter(this);
@@ -95,7 +94,6 @@ public class Node implements Emitter {
 	}
 
 	public void syncBlockchain(Peer peer) {
-		System.out.println(peer.getIP() + " " + peer.getBlockchainHeight());
 		Socket socket = new Socket();
 		JSONObject json = new JSONObject();
 		JSONObject sendingJSON;
@@ -108,7 +106,6 @@ public class Node implements Emitter {
 			stream.println(json.toString());
 			JSONObject receivingJSON = new JSONObject(scanner.nextLine());
 			String hash = receivingJSON.getString("blockhash");
-			System.out.println(hash);
 			if (!hash.equals(blockchain.getLastBlock().getHash())) {
 				int index = blockchain.getLastBlock().getIndex();
 				int difference = 1;
@@ -159,6 +156,7 @@ public class Node implements Emitter {
 				blockchain.addBlock(block, false);
 			}
 			blockchain.setSynching(false);
+			System.out.println("Blockchain is synced. Last block index: " + (blockchain.getBlockchainHeight() - 1));
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

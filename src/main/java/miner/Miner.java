@@ -30,6 +30,8 @@ public class Miner {
 					Block block = generateNextBlock(blockchain);
 					if (block.getIndex() != 0) {
 						try {
+							System.out.println();
+							System.out.println("Mined new block!");
 							blockchain.addBlock(block, true);
 						} catch (ValidationBlockException e) {
 							System.out.println("Block not added in Miner " + e.getMessage());

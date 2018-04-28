@@ -74,8 +74,10 @@ public class EventProcessor {
 									block.fromJSON(receivingJSON.getJSONObject("newBlock"));
 									miner.stopMining();
 									miner.shutDownExecutor();
-									if (block.getIndex() != blockchain.getLastBlock().getIndex()) {
+									if (block.getIndex() == blockchain.getLastBlock().getIndex() + 1) {
 										try {
+											System.out.println();
+											System.out.println("Received new block!");
 											blockchain.addBlock(block, false);
 											Thread.sleep(500);
 										} catch (InterruptedException e) {
