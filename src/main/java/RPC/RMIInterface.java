@@ -16,5 +16,4 @@ public interface RMIInterface extends Remote {
     String getMiningInfo() throws RemoteException;
     void setMining(boolean toMine) throws RemoteException;
     void setMiningThreads(byte num) throws RemoteException;
-    void leave() throws RemoteException;
 }
