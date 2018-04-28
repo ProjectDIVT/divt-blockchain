@@ -1,5 +1,8 @@
 package RPC;
 
+import java.io.IOException;
+import java.net.InetSocketAddress;
+import java.net.Socket;
 import java.rmi.AccessException;
 import java.rmi.AlreadyBoundException;
 import java.rmi.RemoteException;
@@ -12,6 +15,7 @@ import blockchain.Block;
 import blockchain.Blockchain;
 import miner.Miner;
 import node.Node;
+import node.Peer;
 
 public class DivtDaemon implements RMIInterface {
 	static Blockchain blockchain;
@@ -138,5 +142,10 @@ public class DivtDaemon implements RMIInterface {
 			miner.setMining(true);
 			miner.mine();
 		}).start();
+	}
+	
+	public void leave() throws RemoteException{
+		node.leaveNetwork();
+		
 	}
 }
