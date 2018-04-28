@@ -82,7 +82,7 @@ public class Blockchain {
 			}
 		} else {
 			try {
-				int index = 0;
+				int index = 0; // <--
 				while (true) {
 					Path path = Paths.get(mainPath.toString(), "blk" + index + ".txt");
 					if (Files.exists(path)) {
@@ -231,12 +231,12 @@ public class Blockchain {
 	 */
 	public void modifyBlockchainDifficulty(double newBlockTimestamp, double previousBlockTimestamp) {
 		double difficultyMultiplier = (newBlockTimestamp - previousBlockTimestamp) / (double) this.blockTargetTime;
-
+		
 		// Limit the blockchain difficulty change value
-		if (difficultyMultiplier > 2) {
+		if (difficultyMultiplier >= 2) {
 			difficultyMultiplier = 2;
 		}
-		if (difficultyMultiplier < 0.5) {
+		if (difficultyMultiplier <= 0.5) {
 			difficultyMultiplier = 0.5;
 		}
 
@@ -249,7 +249,7 @@ public class Blockchain {
 	 * @param index
 	 *            The index of the last not forked block.
 	 */
-	public void removeForkedBlocks(int index) {
+	public void removeForkedBlocks(int index) { 
 		int blockFileIndex = blocks.get(index).getBlockFile() + 1;
 
 		// Remove all blocks after the last not forked one
@@ -263,6 +263,7 @@ public class Blockchain {
 			if (Files.exists(path)) {
 				try {
 					Files.delete(path);
+					blkPaths.remove(path);
 					blockFileIndex++;
 
 				} catch (IOException e) {
@@ -283,6 +284,7 @@ public class Blockchain {
 				return lineIndex <= index;
 			}).forEach(e -> fileContent.append(e + "\n"));
 			Files.delete(path);
+//			blkPaths.remove(path);
 			Files.createFile(path);
 			Files.write(path, fileContent.toString().getBytes());
 		} catch (IOException e) {

@@ -49,6 +49,7 @@ public class DivtDaemon implements RMIInterface {
 			UnicastRemoteObject.unexportObject(this, true);
 			miner.stopMining();
 			miner.shutDownExecutor();
+			node.leaveNetwork(); // added to leave the network
 		} catch (RemoteException e) {
 			
 			e.printStackTrace();

@@ -143,8 +143,7 @@ public class Block {
 	 * @return String The block parameters on a single line.
 	 */
 	public String toFile() {
-		return index + " " + hash + " " + previousHash + " " + timestamp + " " + nonce + " " + blockchainDifficulty
-				+ "\n";
+		return index + " " + hash + " " + previousHash + " " + timestamp + " " + nonce + " " + blockchainDifficulty + "\n";
 	}
 
 	/**
