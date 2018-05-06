@@ -11,11 +11,13 @@ import org.json.JSONObject;
 import blockchain.Block;
 import blockchain.Blockchain;
 import miner.Miner;
+import node.Node;
 
 public class DivtDaemon implements RMIInterface {
 	static Blockchain blockchain;
 	static Miner miner;
-	
+	static Node node;
+
 	public static void main(String args[]) {
 		Registry registry;
 		try {
@@ -33,9 +35,10 @@ public class DivtDaemon implements RMIInterface {
 			e.printStackTrace();
 		}
 		blockchain = new Blockchain();
-		while(blockchain.isReadingFiles) {
+		while (blockchain.isReadingFiles) {
 		}
 		miner = new Miner(blockchain);
+		node = new Node(blockchain, miner);
 		miner.mine();
 	}
 
@@ -45,6 +48,7 @@ public class DivtDaemon implements RMIInterface {
 			UnicastRemoteObject.unexportObject(this, true);
 			miner.stopMining();
 			miner.shutDownExecutor();
+			node.leaveNetwork(); // added to leave the network
 		} catch (RemoteException e) {
 			e.printStackTrace();
 		}
@@ -116,7 +120,8 @@ public class DivtDaemon implements RMIInterface {
 		}
 		return jsonObject.toString(4);
 	}
-	public void setMiningThreads(byte num) throws RemoteException{
+
+	public void setMiningThreads(byte num) throws RemoteException {
 		new Thread(() -> {
 			miner.stopMining();
 			miner.shutDownExecutor();
@@ -130,8 +135,5 @@ public class DivtDaemon implements RMIInterface {
 			miner.setMining(true);
 			miner.mine();
 		}).start();
-	
-		
-	
 	}
 }

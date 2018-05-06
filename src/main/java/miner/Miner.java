@@ -10,6 +10,7 @@ import java.util.concurrent.TimeUnit;
 
 import blockchain.Block;
 import blockchain.Blockchain;
+import blockchain.ValidationBlockException;
 
 public class Miner {
 
@@ -23,22 +24,30 @@ public class Miner {
 	}
 
 	public void mine() {
-		while (isMining) {
-			Block block = generateNextBlock(blockchain);
-			if (block.getIndex() != 0) {
-				blockchain.addBlock(block);
+		new Thread(() -> {
+			while (isMining) {
+				if (!blockchain.isSynching()) {
+					Block block = generateNextBlock(blockchain);
+					if (block.getIndex() != 0) {
+						try {
+							System.out.println();
+							System.out.println("Mined new block!");
+							blockchain.addBlock(block, true);
+						} catch (ValidationBlockException e) {
+							System.out.println("Block not added in Miner " + e.getMessage());
+							continue;
+						}
+					}
+				}
 			}
-		}
-
+		}).start();
 	}
 
 	private Block generateNextBlock(Blockchain blockchain) {
-
 		Block previousBlock = blockchain.getLastBlock();
 		int index = previousBlock.getIndex() + 1;
 		String previousHash = previousBlock.getHash();
 		Block newBlock = new Block();
-		threads = 2;
 
 		executor = Executors.newFixedThreadPool(threads); //
 		for (int i = 0; i < threads; i++) {
@@ -61,6 +70,15 @@ public class Miner {
 						newBlock.setNonce(block.getNonce());
 						newBlock.setPreviousHash(block.getPreviousHash());
 						newBlock.setTimestamp(block.getTimestamp());
+						
+						double difficultyMultiplier = (newBlock.getTimestamp() - previousBlock.getTimestamp()) / (double) blockchain.blockTargetTime;
+						if (difficultyMultiplier > 2) {
+							difficultyMultiplier = 2;
+						}
+						if (difficultyMultiplier < 0.5) {
+							difficultyMultiplier = 0.5;
+						}
+						newBlock.setBlockchainDifficulty((long) (previousBlock.getBlockchainDifficulty() * difficultyMultiplier));
 						executor.shutdownNow();
 					}
 					if (Thread.currentThread().isInterrupted()) {
@@ -104,6 +122,8 @@ public class Miner {
 	}
 
 	public void shutDownExecutor() {
-		executor.shutdownNow();
+		if (executor != null) {
+			executor.shutdownNow();
+		}
 	}
 }
